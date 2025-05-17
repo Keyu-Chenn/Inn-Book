@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Book - 社区排行榜</title>
+    <style>
+        /* Copied common styles from community-page.html */
+        :root {
+            --parchment-light: #f5f0e1; --parchment-medium: #e6dcbf; --parchment-dark: #d4c8a8;
+            --ink-light: #5a4a3f; --ink-dark: #2c1e18; --accent-gold: #c19a49; --accent-red: #8c3a2b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Serif SC', 'Microsoft YaHei', serif; }
+        body { background-color: var(--parchment-light); color: var(--ink-dark); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        header { background-color: var(--parchment-dark); box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; }
+        .logo { display: flex; align-items: center; }
+        .logo svg { height: 40px; width: 40px; margin-right: 10px; }
+        .logo h1 { font-size: 24px; color: var(--ink-dark); font-weight: bold; }
+        .nav-links { display: flex; list-style: none; }
+        .nav-links li { margin-left: 30px; }
+        .nav-links a { text-decoration: none; color: var(--ink-light); font-weight: 500; font-size: 16px; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent-gold); }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--parchment-medium); display: flex; justify-content: center; align-items: center; border: 2px solid var(--accent-gold); overflow: hidden; cursor: pointer; }
+        .avatar a { display: flex; width:100%; height:100%; align-items:center; justify-content:center;}
+        .avatar svg { stroke: var(--ink-dark); }
+        .username { font-weight: 500; color: var(--ink-dark); }
+
+        .community-header-section { padding: 50px 0; background-color: var(--parchment-medium); border-bottom: 2px solid var(--parchment-dark); text-align: center; }
+        .community-header-section h2 { font-size: 40px; color: var(--ink-dark); margin-bottom: 20px; }
+        .community-header-section p { font-size: 18px; color: var(--ink-light); max-width: 750px; margin: 0 auto; }
+        
+        .community-nav-tabs { display: flex; justify-content: center; border-bottom: 1px solid var(--parchment-dark); background-color: var(--parchment-light); padding: 0 10px; }
+        .community-nav-tabs a { text-decoration: none; color: var(--ink-light); padding: 12px 30px; font-weight: 500; transition: all 0.3s; position: relative; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+        .community-nav-tabs a.active { color: var(--accent-gold); border-bottom-color: var(--accent-gold); }
+        .community-nav-tabs a:hover { color: var(--accent-gold); border-bottom-color: var(--accent-gold); }
+        
+        .main-community-content { padding-top: 30px; }
+        
+        /* Rankings specific styles */
+        .rankings-page-title {
+            font-size: 28px;
+            color: var(--ink-dark);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .rankings-tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Increased gap */
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .rankings-tab-btn { /* Renamed from rankings-tab */
+            padding: 10px 25px; /* Increased padding */
+            background-color: var(--parchment-medium);
+            border: 1px solid var(--parchment-dark);
+            border-radius: 25px; /* More rounded */
+            cursor: pointer;
+            font-size: 16px; /* Increased font size */
+            color: var(--ink-light);
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .rankings-tab-btn.active, .rankings-tab-btn:hover {
+            background-color: var(--accent-gold);
+            color: var(--parchment-light);
+            border-color: var(--accent-gold);
+        }
+        
+        .ranking-list-wrapper { /* Wrapper for the list */
+            background-color: var(--parchment-medium);
+            border-radius: 8px;
+            padding: 20px; /* Padding inside the wrapper */
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            border: 1px solid var(--parchment-dark);
+        }
+        .ranking-list { list-style: none; padding:0; } /* Removed default list styles */
+        
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 18px 15px; /* Increased padding */
+            border-bottom: 1px solid var(--parchment-dark);
+            transition: background-color 0.2s;
+        }
+        .ranking-item:last-child { border-bottom: none; }
+        .ranking-item:hover { background-color: var(--parchment-light); }
+        
+        .ranking-number {
+            width: 36px; /* Increased size */
+            height: 36px; /* Increased size */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--parchment-dark);
+            color: var(--ink-dark);
+            border-radius: 50%;
+            margin-right: 20px; /* Increased margin */
+            font-weight: 600;
+            font-size: 16px; /* Larger number */
+            flex-shrink: 0;
+        }
+        /* Top 3 styling */
+        .ranking-item:nth-child(1) .ranking-number { background-color: var(--accent-gold); color: var(--parchment-light); border: 2px solid #DAA520;} /* Gold */
+        .ranking-item:nth-child(2) .ranking-number { background-color: #C0C0C0; color: var(--ink-dark); border: 2px solid #A8A8A8;} /* Silver */
+        .ranking-item:nth-child(3) .ranking-number { background-color: #CD7F32; color: var(--parchment-light); border: 2px solid #B87333;} /* Bronze */
+        
+        .ranking-cover { /* For work/game cover image */
+            width: 60px; height: 80px;
+            background-color: var(--parchment-dark);
+            border-radius: 4px;
+            margin-right: 15px;
+            display:flex; align-items:center; justify-content:center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .ranking-cover svg { width: 40px; height: 40px; opacity:0.7; stroke: var(--ink-light);}
+
+        .ranking-content { flex-grow: 1; }
+        .ranking-title {
+            font-size: 18px; /* Larger title */
+            font-weight: 600;
+            color: var(--ink-dark);
+            margin-bottom: 5px;
+            text-decoration: none;
+        }
+         .ranking-title a { color: var(--ink-dark); text-decoration: none; }
+         .ranking-title a:hover { color: var(--accent-gold); text-decoration: underline;}
+
+        .ranking-author { font-size: 14px; color: var(--ink-light); margin-bottom: 8px;}
+        .ranking-author a {color: var(--ink-light); text-decoration:none;}
+        .ranking-author a:hover {color: var(--accent-gold); text-decoration:underline;}
+        
+        .ranking-stats { display: flex; gap: 20px; color: var(--ink-light); font-size:13px;}
+        .ranking-stat { display: flex; align-items: center; }
+        .ranking-stat svg { width: 16px; height: 16px; margin-right: 6px; fill: var(--ink-light); }
+        
+        main { flex-grow: 1;}
+
+        footer { background-color: var(--ink-dark); color: var(--parchment-light); padding: 40px 0; margin-top: auto; }
+        /* ... other footer styles ... */
+        .footer-content { display: flex; justify-content: space-between; align-items: center; }
+        .footer-logo { display: flex; align-items: center; }
+        .footer-logo svg { height: 30px; width: 30px; margin-right: 10px; }
+        .footer-logo h3 { font-size: 20px; color: var(--parchment-light); }
+        .footer-links { display: flex; list-style: none; gap: 20px; }
+        .footer-links a { text-decoration: none; color: var(--parchment-light); opacity: 0.8; transition: opacity 0.3s; }
+        .footer-links a:hover { opacity: 1; color: var(--accent-gold); }
+        .copyright { opacity: 0.6; font-size: 14px; margin-top: 5px; }
+        
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .community-header-section h2 { font-size: 32px; }
+            .community-header-section p { font-size: 16px; }
+            .rankings-tabs-container { gap: 10px; justify-content:center; }
+            .rankings-tab-btn {padding: 8px 18px; font-size:14px;}
+            .ranking-item { padding: 12px 10px;}
+            .ranking-number { width:30px; height:30px; font-size:14px; margin-right:10px;}
+            .ranking-cover { width:50px; height:70px; margin-right:10px;}
+            .ranking-cover svg {width:30px; height:30px;}
+            .ranking-title {font-size:16px;}
+            .ranking-stats {flex-direction:column; gap:5px; font-size:12px;}
+            .footer-content { flex-direction: column; text-align: center; gap: 20px; }
+            .footer-links { justify-content: center; flex-wrap: wrap; }
+            .community-nav-tabs { overflow-x: auto; justify-content: flex-start; padding-bottom: 0; white-space: nowrap; }
+            .community-nav-tabs a { padding: 10px 20px; flex-shrink: 0; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <a href="homepage.html" style="display: flex; align-items: center; text-decoration: none;">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="8" width="30" height="24" rx="2" fill="#c19a49" opacity="0.3"/><path d="M8 12 H32 M8 16 H28 M8 20 H30 M8 24 H25 M8 28 H22" stroke="#2c1e18" stroke-width="1.5"/><path d="M34 4 L36 6 L34 8 L32 6 Z" fill="#c19a49"/><path d="M20 4 L22 2 L24 4 L22 6 Z" fill="#c19a49"/><path d="M8 4 L10 2 L12 4 L10 6 Z" fill="#c19a49"/><path d="M28 36 L30 34 L32 36 L30 38 Z" fill="#c19a49"/><path d="M14 36 L16 34 L18 36 L16 38 Z" fill="#c19a49"/></svg>
+                        <h1>AI Book</h1>
+                    </a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="homepage.html">首页</a></li>
+                    <li><a href="creation-mode-list.html">创作模式</a></li>
+                    <li><a href="game_mode_list.html">游戏模式</a></li>
+                    <li><a href="community-page.html" class="active">社区</a></li>
+                    <li><a href="help.html">帮助</a></li>
+                </ul>
+                <div class="user-info">
+                     <a href="dashboard-overview.html" class="avatar">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </a>
+                    <span class="username">李白</span>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="community-header-section">
+            <div class="container">
+                <h2>AI Book 社区</h2>
+                <p>探索无限创意，发现精彩故事，与创作者交流互动，在这里开启属于你的文学之旅。</p>
+            </div>
+        </section>
+
+        <div class="community-nav-tabs">
+            <a href="community-page.html">浏览作品</a>
+            <a href="community-rankings.html" class="active">排行榜</a>
+            <a href="community-events.html">活动专区</a>
+            <a href="community-users.html">推荐用户</a>
+            <a href="dashboard-overview.html#my-follows">我的关注</a>
+        </div>
+
+        <div class="main-community-content container">
+            <h2 class="rankings-page-title">社区风云榜</h2>
+            <div class="rankings-tabs-container">
+                <button class="rankings-tab-btn active" data-tab="hot-works">热门作品榜</button>
+                <button class="rankings-tab-btn" data-tab="new-stars">创作新星榜</button>
+                <button class="rankings-tab-btn" data-tab="popular-games">人气游戏榜</button>
+            </div>
+
+            <div class="ranking-list-wrapper">
+                <ul class="ranking-list" id="ranking-list-content">
+                    <!-- 作品榜单示例 -->
+                    <li class="ranking-item" data-category="hot-works">
+                        <div class="ranking-number">1</div>
+                        <div class="ranking-cover">
+                            <svg viewBox="0 0 80 80"><rect x="10" y="10" width="60" height="60" fill="var(--accent-gold)" opacity="0.2"/><path d="M20 20 H60 M20 30 H60 M20 40 H60 M20 50 H45" stroke-width="1.5"/></svg>
+                        </div>
+                        <div class="ranking-content">
+                            <h4 class="ranking-title"><a href="work-detail.html">《星海编年史：觉醒》</a></h4>
+                            <p class="ranking-author">作者：<a href="#">幻梦旅人</a></p>
+                            <div class="ranking-stats">
+                                <span class="ranking-stat"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>2.5k</span>
+                                <span class="ranking-stat"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/></svg>10.2k</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="ranking-item" data-category="hot-works">
+                        <div class="ranking-number">2</div>
+                         <div class="ranking-cover">
+                            <svg viewBox="0 0 80 80"><rect x="10" y="10" width="60" height="60" fill="var(--accent-red)" opacity="0.2"/><path d="M20 20 H60 M20 30 H50 M20 40 H55 M20 50 H40" stroke-width="1.5"/></svg>
+                        </div>
+                        <div class="ranking-content">
+                            <h4 class="ranking-title"><a href="work-detail.html">《迷雾之城的低语：游戏》</a></h4>
+                            <p class="ranking-author">作者：<a href="#">夜行者</a></p>
+                            <div class="ranking-stats">
+                                <span class="ranking-stat"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>1.8k</span>
+                                <span class="ranking-stat"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/></svg>8.1k</span>
+                            </div>
+                        </div>
+                    </li>
+                     <li class="ranking-item" data-category="hot-works">
+                        <div class="ranking-number">3</div>
+                        <div class="ranking-cover">
+                            <svg viewBox="0 0 80 80"><rect x="10" y="10" width="60" height="60" fill="var(--ink-light)" opacity="0.2"/><path d="M30 20 L50 20 L40 60 Z" stroke-width="1.5" fill="var(--ink-light)" fill-opacity="0.3"/></svg>
+                        </div>
+                        <div class="ranking-content">
+                            <h4 class="ranking-title"><a href="work-detail.html">《古蜀神树之谜》</a></h4>
+                            <p class="ranking-author">作者：<a href="#">考古学家李</a></p>
+                            <div class="ranking-stats">
+                                <span class="ranking-stat"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>1.2k</span>
+                                <span class="ranking-stat"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/></svg>5.5k</span>
+                            </div>
+                        </div>
+                    </li>
+                    <!-- More items will be loaded by JS based on tab -->
+                </ul>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                     <a href="homepage.html" style="display: flex; align-items: center; text-decoration: none;">
+                        <svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="8" width="20" height="14" rx="1" fill="#c19a49" opacity="0.3"/><path d="M8 12 H22 M8 15 H20 M8 18 H18" stroke="#e6dcbf" stroke-width="1"/><path d="M24 5 L25 4 L26 5 L25 6 Z" fill="#c19a49"/><path d="M15 5 L16 4 L17 5 L16 6 Z" fill="#c19a49"/><path d="M6 5 L7 4 L8 5 L7 6 Z" fill="#c19a49"/><path d="M20 25 L21 24 L22 25 L21 26 Z" fill="#c19a49"/><path d="M10 25 L11 24 L12 25 L11 26 Z" fill="#c19a49"/></svg>
+                        <h3>AI Book</h3>
+                    </a>
+                </div>
+                <ul class="footer-links">
+                    <li><a href="about.html">关于我们</a></li>
+                    <li><a href="terms.html">使用条款</a></li>
+                    <li><a href="privacy.html">隐私政策</a></li>
+                    <li><a href="help.html">帮助中心</a></li>
+                    <li><a href="contact.html">联系我们</a></li>
+                </ul>
+                <div class="copyright">
+                    &copy; 2025 AI Book. 保留所有权利。
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script>
+        // Basic tab switching for rankings
+        const tabButtons = document.querySelectorAll('.rankings-tab-btn');
+        const rankingList = document.getElementById('ranking-list-content');
+
+        // Placeholder data - in a real app, this would come from an API
+        const rankingsData = {
+            'hot-works': [
+                { rank: 1, title: '《星海编年史：觉醒》', author: '幻梦旅人', likes: '2.5k', views: '10.2k', link: 'work-detail.html', coverType: 'sci-fi' },
+                { rank: 2, title: '《迷雾之城的低语：游戏》', author: '夜行者', likes: '1.8k', views: '8.1k', link: 'game-detail.html', coverType: 'mystery-game' },
+                { rank: 3, title: '《古蜀神树之谜》', author: '考古学家李', likes: '1.2k', views: '5.5k', link: 'work-detail.html', coverType: 'history-adventure' },
+                { rank: 4, title: '《AI觉醒：代码诗人》', author: '二进制的浪漫', likes: '980', views: '4.3k', link: 'work-detail.html', coverType: 'ai-poetry' },
+            ],
+            'new-stars': [
+                { rank: 1, title: '《初探异界》', author: '新人小明', likes: '550', views: '1.2k', link: 'work-detail.html', coverType: 'fantasy-new' },
+                { rank: 2, title: '《都市暗流》', author: '笔尖行者', likes: '480', views: '980', link: 'work-detail.html', coverType: 'urban-mystery' },
+            ],
+            'popular-games': [
+                 { rank: 1, title: '《龙痕年代：游戏版》', author: '李白', likes: '3.1k', views: '15.5k', link: 'game-detail.html', coverType: 'fantasy-game' },
+                 { rank: 2, title: '《星尘远征：互动版》', author: '科幻迷', likes: '2.2k', views: '11.0k', link: 'game-detail.html', coverType: 'sci-fi-game' },
+            ]
+        };
+        
+        function generateCoverSVG(type) {
+            // Simple placeholder SVGs based on type
+            if (type === 'sci-fi' || type === 'sci-fi-game' || type === 'ai-poetry') {
+                return '<svg viewBox="0 0 80 80"><rect x="10" y="10" width="60" height="60" fill="var(--accent-gold)" opacity="0.2"/><path d="M20 20 H60 M20 30 H60 M20 40 H60 M20 50 H45" stroke-width="1.5"/><circle cx="40" cy="40" r="10" stroke="var(--accent-gold)" stroke-width="1" fill="var(--parchment-light)"/></svg>';
+            } else if (type === 'mystery-game' || type === 'urban-mystery') {
+                 return '<svg viewBox="0 0 80 80"><rect x="10" y="10" width="60" height="60" fill="var(--ink-dark)" opacity="0.2"/><path d="M40 20 L25 50 L55 50 Z" stroke-width="1.5" fill="var(--ink-light)" opacity="0.6"/><circle cx="40" cy="30" r="5" fill="var(--parchment-light)"/></svg>';
+            } else { // Default / fantasy / history
+                 return '<svg viewBox="0 0 80 80"><rect x="10" y="10" width="60" height="60" fill="var(--accent-red)" opacity="0.2"/><path d="M25 50 Q40 20 55 50 T25 50" stroke="var(--ink-light)" stroke-width="1.5" fill="none"/><path d="M20 20 L60 60 M60 20 L20 60" stroke="var(--accent-red)" stroke-width="1" opacity="0.5"/></svg>';
+            }
+        }
+
+        function displayRankings(category) {
+            rankingList.innerHTML = ''; // Clear current list
+            const items = rankingsData[category] || [];
+            items.forEach(item => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('ranking-item');
+                listItem.innerHTML = `
+                    <div class="ranking-number">${item.rank}</div>
+                    <div class="ranking-cover">${generateCoverSVG(item.coverType)}</div>
+                    <div class="ranking-content">
+                        <h4 class="ranking-title"><a href="${item.link}">${item.title}</a></h4>
+                        <p class="ranking-author">作者：<a href="#">${item.author}</a></p>
+                        <div class="ranking-stats">
+                            <span class="ranking-stat"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>${item.likes}</span>
+                            <span class="ranking-stat"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/></svg>${item.views}</span>
+                        </div>
+                    </div>
+                `;
+                rankingList.appendChild(listItem);
+            });
+        }
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                displayRankings(button.dataset.tab);
+            });
+        });
+
+        // Initial display
+        displayRankings('hot-works');
+    </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Book - 用户中心总览</title>
+    <style>
+        :root {
+            --parchment-light: #f5f0e1;
+            --parchment-medium: #e6dcbf;
+            --parchment-dark: #d4c8a8;
+            --ink-light: #5a4a3f;
+            --ink-dark: #2c1e18;
+            --accent-gold: #c19a49;
+            --accent-red: #8c3a2b;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Serif SC', 'Microsoft YaHei', serif; }
+        body { background-color: var(--parchment-light); color: var(--ink-dark); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        
+        header { background-color: var(--parchment-dark); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; }
+        .logo { display: flex; align-items: center; }
+        .logo svg { height: 40px; width: 40px; margin-right: 10px; }
+        .logo h1 { font-size: 24px; color: var(--ink-dark); font-weight: bold; }
+        .nav-links { display: flex; list-style: none; }
+        .nav-links li { margin-left: 30px; }
+        .nav-links a { text-decoration: none; color: var(--ink-light); font-weight: 500; font-size: 16px; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent-gold); }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--parchment-medium); display: flex; justify-content: center; align-items: center; border: 2px solid var(--accent-gold); overflow: hidden; cursor: pointer; }
+        .avatar a { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; }
+        .avatar svg { stroke: var(--ink-dark); }
+        .username { font-weight: 500; color: var(--ink-dark); }
+
+        .dashboard-layout { display: flex; margin-top: 30px; margin-bottom: 40px; gap: 30px; flex-grow: 1;}
+        .sidebar { width: 260px; background-color: var(--parchment-medium); border-radius: 8px; padding: 25px 0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); flex-shrink: 0; align-self: flex-start; }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li a { text-decoration: none; color: var(--ink-light); font-weight: 500; display: flex; align-items: center; transition: color 0.3s, background-color 0.3s; padding: 15px 25px; font-size: 16px; }
+        .sidebar-menu li.active a { background-color: var(--parchment-light); color: var(--accent-gold); border-left: 4px solid var(--accent-gold); padding-left: 21px; }
+        .sidebar-menu li.active svg { stroke: var(--accent-gold); }
+        .sidebar-menu li a:hover { color: var(--accent-gold); background-color: var(--parchment-light); }
+        .sidebar-menu li a:hover svg { stroke: var(--accent-gold); }
+        .sidebar-menu svg { width: 22px; height: 22px; margin-right: 15px; stroke: var(--ink-light); transition: stroke 0.3s; }
+        
+        .main-dashboard-content { flex: 1; }
+        .content-section { margin-bottom: 30px; background-color: var(--parchment-light); padding: 25px; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid var(--parchment-dark);}
+        .content-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;} /* Added flex-wrap and gap */
+        .page-main-title { font-size: 30px; color: var(--ink-dark); font-weight: 600; }
+        .section-sub-title { font-size: 22px; margin-bottom: 20px; color: var(--ink-dark); position: relative; padding-bottom: 10px; border-bottom: 1px solid var(--parchment-dark); flex-grow: 1; /* Allow title to take space */}
+        
+        .card-grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .data-card { background-color: var(--parchment-medium); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); transition: transform 0.3s, box-shadow 0.3s; border: 1px solid var(--parchment-dark); display: flex; flex-direction: column;} /* Added display flex */
+        .data-card:hover { transform: translateY(-5px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); }
+        .card-header { padding: 15px 20px; background-color: var(--parchment-dark); border-bottom: 1px solid var(--parchment-light); }
+        .card-title { font-size: 18px; color: var(--ink-dark); font-weight: 600; }
+        .card-body { padding: 20px; flex-grow:1; display:flex; flex-direction:column;} /* Added flex properties */
+        .status-tag { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 13px; margin-right: 8px; font-weight: 500; }
+        .status-wip { background-color: rgba(193, 154, 73, 0.2); color: var(--accent-gold); border: 1px solid rgba(193, 154, 73, 0.4); }
+        .status-published { background-color: rgba(92, 163, 95, 0.2); color: #4a7a4c; border: 1px solid rgba(92, 163, 95, 0.4); }
+        .item-description { font-size: 14px; color: var(--ink-light); margin: 10px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: calc(1.6em * 2); flex-grow:1;} /* Added flex-grow */
+        .word-count { font-size: 14px; color: var(--ink-light); margin-bottom: 15px; }
+        .card-actions { margin-top: auto; /* Pushes to bottom */ display: flex; gap: 10px; flex-wrap: wrap; padding-top: 15px; border-top: 1px solid var(--parchment-dark); }
+        .btn { padding: 8px 15px; font-size: 14px; border-radius:4px; text-decoration:none; cursor:pointer; transition: all 0.3s;}
+        .btn-primary {background-color:var(--accent-gold); color:var(--parchment-light); border:none;}
+        .btn-primary:hover {background-color:#a88035;}
+        .btn-outline {border: 1px solid var(--ink-light);color: var(--ink-light);background: transparent;}
+        .btn-outline:hover {background-color: var(--ink-light);color: var(--parchment-light);}
+
+        .btn-create { display: inline-flex; align-items: center; padding: 10px 20px; font-size: 15px; }
+        .btn-create svg { margin-right: 10px; height: 18px; width: 18px; stroke: currentColor; }
+        
+        .game-record-card { background-color: var(--parchment-medium); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); margin-bottom: 25px; transition: transform 0.3s, box-shadow 0.3s; display: flex; align-items: stretch; border: 1px solid var(--parchment-dark); }
+        .game-record-card:hover { transform: translateY(-5px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); }
+        .game-card-icon { width: 120px; background-color: var(--parchment-dark); display: flex; justify-content: center; align-items: center; padding: 15px; flex-shrink:0; }
+        .game-card-icon svg { width: 60px; height: 60px; stroke: var(--ink-light); }
+        .game-card-content { padding: 20px; flex: 1; display:flex; flex-direction:column;} /* Added display flex */
+        .game-card-title { font-size: 20px; margin-bottom: 10px; color: var(--ink-dark); font-weight: 600; }
+        .game-card-details { display: flex; align-items: center; margin-bottom: 15px; color: var(--ink-light); font-size: 14px; flex-wrap: wrap; gap: 5px 15px; }
+        .detail-separator { color: var(--parchment-dark); }
+        .progress-bar-container { height: 8px; background-color: var(--parchment-dark); border-radius: 4px; margin-bottom: 15px; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--accent-gold); width: 65%; border-radius: 4px; transition: width 0.5s ease-in-out; }
+        
+        .stats-grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+        .stat-card { background-color: var(--parchment-medium); border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); border: 1px solid var(--parchment-dark); }
+        .stat-number { font-size: 32px; font-weight: 700; color: var(--accent-gold); margin-bottom: 8px; }
+        .stat-label { font-size: 15px; color: var(--ink-light); }
+        
+        footer { background-color: var(--ink-dark); color: var(--parchment-light); padding: 40px 0; margin-top: auto;}
+        .footer-content { display: flex; justify-content: space-between; align-items: center; }
+        .footer-logo { display: flex; align-items: center; }
+        .footer-logo svg { height: 30px; width: 30px; margin-right: 10px; }
+        .footer-logo h3 { font-size: 20px; color: var(--parchment-light); }
+        .footer-links { display: flex; list-style: none; gap: 20px; }
+        .footer-links a { text-decoration: none; color: var(--parchment-light); opacity: 0.8; transition: opacity 0.3s; }
+        .footer-links a:hover { opacity: 1; color: var(--accent-gold); }
+        .copyright { opacity: 0.6; font-size: 14px; margin-top: 5px; }
+        
+        @media (max-width: 992px) {
+            .dashboard-layout { flex-direction: column; }
+            .sidebar { width: 100%; margin-bottom: 30px; padding: 15px 0; display: flex; overflow-x: auto; white-space: nowrap; align-self:stretch;}
+            .sidebar-menu li { flex-shrink: 0; }
+            .sidebar-menu li.active { border-left: none; border-bottom: 4px solid var(--accent-gold); padding-left: 25px; }
+            .stats-grid-container { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        }
+        @media (max-width: 768px) {
+            .content-section { padding: 20px; }
+            .game-record-card { flex-direction: column; }
+            .game-card-icon { width: 100%; height: 120px; border-right: none; border-bottom: 1px solid var(--parchment-dark); }
+            .stats-grid-container { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } 
+            .nav-links { display: none; }
+            .footer-content { flex-direction: column; text-align: center; gap: 20px; }
+            .footer-links { justify-content: center; flex-wrap: wrap; }
+            .page-main-title {font-size: 26px;}
+            .section-sub-title {font-size: 20px;}
+             .content-section-header { flex-direction: column; align-items: stretch; }
+            .btn-create { width: 100%; justify-content: center; margin-top: 10px;}
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <a href="homepage.html" style="display: flex; align-items: center; text-decoration: none;">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="8" width="30" height="24" rx="2" fill="#c19a49" opacity="0.3"/><path d="M8 12 H32 M8 16 H28 M8 20 H30 M8 24 H25 M8 28 H22" stroke="#2c1e18" stroke-width="1.5"/><path d="M34 4 L36 6 L34 8 L32 6 Z" fill="#c19a49"/><path d="M20 4 L22 2 L24 4 L22 6 Z" fill="#c19a49"/><path d="M8 4 L10 2 L12 4 L10 6 Z" fill="#c19a49"/><path d="M28 36 L30 34 L32 36 L30 38 Z" fill="#c19a49"/><path d="M14 36 L16 34 L18 36 L16 38 Z" fill="#c19a49"/></svg>
+                        <h1>AI Book</h1>
+                    </a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="homepage.html">首页</a></li>
+                    <li><a href="creation-mode-list.html">创作模式</a></li>
+                    <li><a href="game_mode_list.html">游戏模式</a></li>
+                    <li><a href="community-page.html">社区</a></li>
+                    <li><a href="help.html">帮助</a></li>
+                </ul>
+                <div class="user-info">
+                    <a href="dashboard-profile.html" class="avatar">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </a>
+                    <span class="username">李白</span>
+                </div>
+            </nav>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="dashboard-layout">
+            <aside class="sidebar">
+                <ul class="sidebar-menu">
+                    <li class="active"><a href="dashboard-overview.html"><svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>总览</a></li>
+                    <li><a href="dashboard-my-works.html"><svg viewBox="0 0 24 24" fill="none"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>我的作品</a></li>
+                    <li><a href="dashboard-my-games.html"><svg viewBox="0 0 24 24" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>我的游戏</a></li>
+                    <li><a href="dashboard-profile.html"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="10" r="3"></circle><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.5"></path></svg>个人资料</a></li>
+                    <li><a href="dashboard-settings.html"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>设置</a></li>
+                </ul>
+            </aside>
+
+            <main class="main-dashboard-content">
+                <div class="content-section">
+                     <h1 class="page-main-title">欢迎回来，李白</h1>
+                </div>
+
+                <div class="content-section">
+                    <div class="content-section-header">
+                        <h2 class="section-sub-title">创作与游戏统计</h2>
+                    </div>
+                    <div class="stats-grid-container">
+                        <div class="stat-card"><div class="stat-number">2</div><div class="stat-label">创作项目</div></div>
+                        <div class="stat-card"><div class="stat-number">1</div><div class="stat-label">进行中游戏</div></div>
+                        <div class="stat-card"><div class="stat-number">25,800</div><div class="stat-label">总字数</div></div>
+                        <div class="stat-card"><div class="stat-number">15</div><div class="stat-label">社区点赞</div></div>
+                        <div class="stat-card"><div class="stat-number">42</div><div class="stat-label">收到评论</div></div>
+                        <div class="stat-card"><div class="stat-number">9</div><div class="stat-label">关注者</div></div>
+                    </div>
+                </div>
+                
+                <div class="content-section">
+                    <div class="content-section-header">
+                        <h2 class="section-sub-title">最近创作</h2>
+                        <a href="new-creation-project.html" class="btn btn-primary btn-create">
+                            <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            新建创作
+                        </a>
+                    </div>
+                    <div class="card-grid-container">
+                        <div class="data-card">
+                            <div class="card-header"><h3 class="card-title">《龙痕年代：序章》</h3></div>
+                            <div class="card-body">
+                                <span class="status-tag status-published">已发布</span>
+                                <div class="word-count">15,300字</div>
+                                <p class="item-description">古老的预言再次苏醒，巨龙的阴影笼罩大地。年轻的勇者，亚瑟，踏上了寻找传说中龙骑士的旅程...</p>
+                                <div class="card-actions">
+                                    <a href="edit-creation-project.html" class="btn btn-primary">继续编辑</a>
+                                    <a href="new-game-world.html?from=龙痕年代" class="btn btn-outline">转为游戏</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="data-card">
+                            <div class="card-header"><h3 class="card-title">《星尘远征：迷失舰队》</h3></div>
+                            <div class="card-body">
+                                <span class="status-tag status-wip">创作中</span>
+                                <div class="word-count">10,500字</div>
+                                <p class="item-description">在银河系的边缘，一支人类的殖民舰队失去了联系。指挥官莉娜带领小队深入未知的星域搜寻...</p>
+                                <div class="card-actions">
+                                    <a href="edit-creation-project.html" class="btn btn-primary">继续编辑</a>
+                                    <a href="#" class="btn btn-outline">AI建议</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-section">
+                    <div class="content-section-header">
+                        <h2 class="section-sub-title">最近游戏</h2>
+                         <a href="new-game-world.html" class="btn btn-primary btn-create">
+                            <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            新建游戏
+                        </a>
+                    </div>
+                    <div class="game-record-card">
+                        <div class="game-card-icon">
+                            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                                <!-- <path d="M10,15 L50,15 L45,45 L15,45 Z" fill="none" stroke-width="2"/><path d="M20,25 L25,25 M35,25 L40,25 M30,35 L35,35 M20,35 L25,35" stroke="var(--accent-gold)" stroke-width="2"/><circle cx="30" cy="30" r="3" fill="var(--accent-gold)"/> -->
+                            </svg>
+                        </div>
+                        <div class="game-card-content">
+                            <h3 class="game-card-title">龙痕年代：游戏版</h3>
+                            <div class="game-card-details">
+                                <span>角色：亚瑟·晨星</span> <span class="detail-separator">|</span>
+                                <span>回合：57</span> <span class="detail-separator">|</span>
+                                <span>最后游戏：2025-05-18</span>
+                            </div>
+                            <div class="progress-bar-container"><div class="progress-fill" style="width: 78%;"></div></div>
+                            <div class="card-actions">
+                                <a href="game-detail.html" class="btn btn-primary">继续游戏</a>
+                                <a href="#" class="btn btn-outline">查看历史</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                     <a href="homepage.html" style="display: flex; align-items: center; text-decoration: none;">
+                        <svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="8" width="20" height="14" rx="1" fill="#c19a49" opacity="0.3"/><path d="M8 12 H22 M8 15 H20 M8 18 H18" stroke="#e6dcbf" stroke-width="1"/><path d="M24 5 L25 4 L26 5 L25 6 Z" fill="#c19a49"/><path d="M15 5 L16 4 L17 5 L16 6 Z" fill="#c19a49"/><path d="M6 5 L7 4 L8 5 L7 6 Z" fill="#c19a49"/><path d="M20 25 L21 24 L22 25 L21 26 Z" fill="#c19a49"/><path d="M10 25 L11 24 L12 25 L11 26 Z" fill="#c19a49"/></svg>
+                        <h3>AI Book</h3>
+                    </a>
+                </div>
+                <ul class="footer-links">
+                    <li><a href="about.html">关于我们</a></li>
+                    <li><a href="terms.html">使用条款</a></li>
+                    <li><a href="privacy.html">隐私政策</a></li>
+                    <li><a href="help.html">帮助中心</a></li>
+                    <li><a href="contact.html">联系我们</a></li>
+                </ul>
+                <div class="copyright">
+                    &copy; 2025 AI Book. 保留所有权利。
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

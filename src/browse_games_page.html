@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Book - 浏览游戏</title>
+    <style>
+        :root {
+            --parchment-light: #f5f0e1;
+            --parchment-medium: #e6dcbf;
+            --parchment-dark: #d4c8a8;
+            --ink-light: #5a4a3f;
+            --ink-dark: #2c1e18;
+            --accent-gold: #c19a49;
+            --accent-red: #8c3a2b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Serif SC', 'Microsoft YaHei', serif;
+        }
+        
+        body {
+            background-color: var(--parchment-light);
+            color: var(--ink-dark);
+            line-height: 1.6;
+            display: flex; /* For sticky footer */
+            flex-direction: column; /* For sticky footer */
+            min-height: 100vh; /* For sticky footer */
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: var(--parchment-dark);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo { display: flex; align-items: center; }
+        .logo svg { height: 40px; width: 40px; margin-right: 10px; }
+        .logo h1 { font-size: 24px; color: var(--ink-dark); font-weight: bold; }
+        
+        .nav-links { display: flex; list-style: none; }
+        .nav-links li { margin-left: 30px; }
+        .nav-links a { text-decoration: none; color: var(--ink-light); font-weight: 500; font-size: 16px; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent-gold); }
+        
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--parchment-medium); display: flex; justify-content: center; align-items: center; border: 2px solid var(--accent-gold); overflow: hidden; cursor: pointer; }
+        .avatar a { display: flex; width:100%; height:100%; align-items:center; justify-content:center;}
+        .avatar svg { stroke: var(--ink-dark); }
+        .username { font-weight: 500; color: var(--ink-dark); }
+
+        .page-header-bar {
+            background-color: var(--parchment-medium);
+            padding: 40px 0;
+            border-bottom: 2px solid var(--parchment-dark);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .page-header-bar h2 {
+            font-size: 36px;
+            color: var(--ink-dark);
+        }
+        
+        .filters-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px; /* Increased padding */
+            background-color: var(--parchment-light);
+            border-radius: 8px;
+            border: 1px solid var(--parchment-dark);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 12px; /* Adjusted gap */
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-group span {
+            color: var(--ink-dark);
+            font-weight: 500;
+            font-size: 15px; /* Slightly larger */
+        }
+        
+        .filter-btn {
+            padding: 9px 18px; /* Adjusted padding */
+            background-color: var(--parchment-medium);
+            border: 1px solid var(--parchment-dark);
+            border-radius: 20px;
+            color: var(--ink-dark);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background-color: var(--accent-gold);
+            color: var(--parchment-light);
+            border-color: var(--accent-gold);
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            flex-grow: 1;
+            min-width: 280px; /* Adjusted min-width */
+            max-width: 450px; /* Adjusted max-width */
+        }
+        
+        .search-input {
+            flex-grow: 1;
+            padding: 10px 18px;
+            border: 1px solid var(--parchment-dark);
+            border-radius: 20px;
+            background-color: var(--parchment-light);
+            color: var(--ink-dark);
+            font-size: 15px; /* Increased size */
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 2px rgba(193, 154, 73, 0.2);
+        }
+        
+        .search-btn {
+            padding: 10px 18px;
+            background-color: var(--accent-gold);
+            border: none;
+            border-radius: 20px;
+            color: var(--parchment-light);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+         .search-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--parchment-light);
+        }
+        .search-btn:hover { background-color: #a88035; }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .game-card {
+            background-color: var(--parchment-medium);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--parchment-dark);
+            text-decoration: none;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .game-banner {
+            height: 160px;
+            background-color: var(--parchment-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid var(--parchment-dark);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-banner svg { width: 90px; height: 90px; opacity: 0.7; }
+        
+        .game-tag-banner {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 5px 12px;
+            background-color: var(--accent-gold);
+            color: var(--parchment-light);
+            font-size: 13px;
+            border-radius: 15px;
+            font-weight: 500;
+        }
+        
+        .game-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .game-header { display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center; }
+        .game-title { font-size: 20px; font-weight: bold; color: var(--ink-dark); }
+        .game-rating { display: flex; align-items: center; color: var(--accent-gold); font-weight: 600; font-size: 15px; }
+        .game-rating svg { width: 16px; height: 16px; margin-right: 5px; fill: currentColor; }
+        .game-description { color: var(--ink-light); font-size: 15px; margin-bottom: 18px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1; min-height: calc(1.6em * 3); }
+        .game-meta { display: flex; justify-content: space-between; color: var(--ink-light); font-size: 13px; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+        .game-meta-item { display: flex; align-items: center; }
+        .game-meta-item svg { width: 14px; height: 14px; margin-right: 5px; fill: currentColor; }
+        .game-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+        .tag { padding: 4px 10px; background-color: var(--parchment-light); border: 1px solid var(--parchment-dark); border-radius: 15px; font-size: 12px; color: var(--ink-light); }
+        
+        .join-btn-card {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-gold);
+            color: var(--parchment-light);
+            border: none;
+            border-radius: 0 0 7px 7px;
+            text-align: center;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+            margin-top: auto;
+        }
+        .join-btn-card:hover { background-color: #a88035; }
+        
+        .pagination { display: flex; justify-content: center; margin: 40px 0 50px; gap: 8px; }
+        .page-item { width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; border: 1px solid var(--parchment-dark); background-color: var(--parchment-medium); border-radius: 4px; color: var(--ink-dark); cursor: pointer; transition: all 0.3s; text-decoration: none; font-size: 15px; }
+        .page-item:hover, .page-item.active { background-color: var(--accent-gold); color: var(--parchment-light); border-color: var(--accent-gold); }
+        .page-arrow { width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; border: 1px solid var(--parchment-dark); background-color: var(--parchment-medium); border-radius: 4px; color: var(--ink-dark); cursor: pointer; transition: all 0.3s; }
+        .page-arrow:hover { background-color: var(--accent-gold); color: var(--parchment-light); border-color: var(--accent-gold); }
+        .page-arrow svg { width: 18px; height: 18px; stroke: currentColor; }
+        
+        main { flex-grow: 1; } /* For sticky footer */
+
+        footer { background-color: var(--ink-dark); color: var(--parchment-light); padding: 40px 0; margin-top:auto; /* Sticky footer */ }
+        .footer-content { display: flex; justify-content: space-between; align-items: center; }
+        .footer-logo { display: flex; align-items: center; }
+        .footer-logo svg { height: 30px; width: 30px; margin-right: 10px; }
+        .footer-logo h3 { font-size: 20px; color: var(--parchment-light); }
+        .footer-links { display: flex; list-style: none; gap: 20px; }
+        .footer-links a { text-decoration: none; color: var(--parchment-light); opacity: 0.8; transition: opacity 0.3s; }
+        .footer-links a:hover { opacity: 1; color: var(--accent-gold); }
+        .copyright { opacity: 0.6; font-size: 14px; margin-top: 5px; }
+        
+        @media (max-width: 992px) {
+             .filters-container { flex-direction: column; align-items: stretch; }
+             .filter-group { justify-content: space-between; width: 100%; }
+             .search-bar { width: 100%; max-width: none; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .filter-group { flex-direction: column; align-items: stretch; }
+            .filter-group span { margin-bottom: 10px; text-align: center; }
+            .filter-btn { width: 100%; margin-bottom: 5px; }
+            .games-grid { grid-template-columns: 1fr; }
+            .footer-content { flex-direction: column; text-align: center; gap: 20px; }
+            .footer-links { justify-content: center; flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <a href="homepage.html" style="display: flex; align-items: center; text-decoration: none;">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="8" width="30" height="24" rx="2" fill="#c19a49" opacity="0.3"/><path d="M8 12 H32 M8 16 H28 M8 20 H30 M8 24 H25 M8 28 H22" stroke="#2c1e18" stroke-width="1.5"/><path d="M34 4 L36 6 L34 8 L32 6 Z" fill="#c19a49"/><path d="M20 4 L22 2 L24 4 L22 6 Z" fill="#c19a49"/><path d="M8 4 L10 2 L12 4 L10 6 Z" fill="#c19a49"/><path d="M28 36 L30 34 L32 36 L30 38 Z" fill="#c19a49"/><path d="M14 36 L16 34 L18 36 L16 38 Z" fill="#c19a49"/></svg>
+                        <h1>AI Book</h1>
+                    </a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="homepage.html">首页</a></li>
+                    <li><a href="creation-mode-list.html">创作模式</a></li>
+                    <li><a href="game_mode_list.html" class="active">游戏模式</a></li>
+                    <li><a href="community-page.html">社区</a></li>
+                    <li><a href="help.html">帮助</a></li>
+                </ul>
+                <div class="user-info">
+                     <a href="dashboard-overview.html" class="avatar">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </a>
+                    <span class="username">李白</span>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="page-header-bar">
+            <div class="container">
+                <h2>浏览社区游戏</h2>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <button class="filter-btn active">全部</button>
+                    <button class="filter-btn">冒险</button>
+                    <button class="filter-btn">魔幻</button>
+                    <button class="filter-btn">科幻</button>
+                    <button class="filter-btn">悬疑</button>
+                    <button class="filter-btn">更多+</button>
+                </div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="搜索游戏名称或标签...">
+                    <button class="search-btn">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="filters-container" style="justify-content: flex-end; padding-top:0; border-top:none; box-shadow:none; background:transparent;">
+                <div class="filter-group">
+                    <span>排序: </span>
+                    <button class="filter-btn active">最新</button>
+                    <button class="filter-btn">热门</button>
+                    <button class="filter-btn">评分</button>
+                    <button class="filter-btn">参与人数</button>
+                </div>
+            </div>
+
+            <div class="games-grid">
+                <a href="game-detail.html" class="game-card">
+                    <div class="game-banner">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <!-- <rect x="10" y="20" width="80" height="60" fill="var(--parchment-dark)" stroke="var(--ink-light)" stroke-width="1.5" rx="5"/><circle cx="50" cy="50" r="20" fill="var(--accent-gold)" opacity="0.4"/><path d="M30 40 L70 40 M30 50 L70 50 M30 60 L70 60" stroke="var(--ink-light)" stroke-width="1.5"/><path d="M85 30 L95 20 M85 40 L95 30 M85 50 L95 40" stroke="var(--accent-gold)" stroke-width="1" opacity="0.7"/><path d="M15 30 L5 20 M15 40 L5 30 M15 50 L5 40" stroke="var(--accent-gold)" stroke-width="1" opacity="0.7"/> -->
+                        </svg>
+                        <span class="game-tag-banner">热门</span>
+                    </div>
+                    <div class="game-content">
+                        <div class="game-header">
+                            <h3 class="game-title">星际探险家</h3>
+                            <div class="game-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>4.8</div>
+                        </div>
+                        <p class="game-description">探索未知星球，寻找珍奇资源和遗失文明，揭开宇宙奥秘。与外星生物建立友谊或面临战斗，每个选择塑造你的故事。</p>
+                        <div class="game-meta">
+                            <div class="game-meta-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-.55-6.17h1.1v-3.66h-1.1v3.66zm0-4.83h1.1V7h-1.1v2z"/></svg>23章节</div>
+                            <div class="game-meta-item"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>1,253人参与</div>
+                        </div>
+                        <div class="game-tags"><span class="tag">科幻</span><span class="tag">冒险</span><span class="tag">太空</span></div>
+                        <button class="join-btn-card">加入游戏</button>
+                    </div>
+                </a>
+                <a href="game-detail.html" class="game-card">
+                    <div class="game-banner">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <!-- <rect x="20" y="20" width="60" height="60" fill="var(--parchment-dark)" stroke="var(--ink-light)" stroke-width="1.5" rx="5"/><path d="M30 50 C30 30 70 30 70 50 C70 70 30 70 30 50" fill="var(--accent-red)" opacity="0.4" stroke="var(--ink-dark)" stroke-width="1"/><path d="M40 40 L40 60 M60 40 L60 60" stroke="var(--ink-light)" stroke-width="1.5"/><path d="M50 30 L50 70" stroke="var(--ink-light)" stroke-width="1.5"/> -->
+                        </svg>
+                    </div>
+                    <div class="game-content">
+                        <div class="game-header">
+                            <h3 class="game-title">龙域传说</h3>
+                            <div class="game-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>4.6</div>
+                        </div>
+                        <p class="game-description">成为龙骑士，与你的龙建立心灵羁绊，保卫王国免受黑暗力量侵袭。探索古老城堡，解开失落的魔法秘密。</p>
+                        <div class="game-meta">
+                            <div class="game-meta-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-.55-6.17h1.1v-3.66h-1.1v3.66zm0-4.83h1.1V7h-1.1v2z"/></svg>17章节</div>
+                            <div class="game-meta-item"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>876人参与</div>
+                        </div>
+                        <div class="game-tags"><span class="tag">魔幻</span><span class="tag">战斗</span><span class="tag">冒险</span></div>
+                        <button class="join-btn-card">加入游戏</button>
+                    </div>
+                </a>
+                <!-- Add more game cards -->
+            </div>
+
+            <div class="pagination">
+                <a href="#" class="page-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke-width="2"/></svg></a>
+                <a href="#" class="page-item active">1</a>
+                <a href="#" class="page-item">2</a>
+                <a href="#" class="page-item">3</a>
+                <a href="#" class="page-item">...</a>
+                <a href="#" class="page-item">8</a>
+                <a href="#" class="page-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18L15 12L9 6" stroke-width="2"/></svg></a>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                     <a href="homepage.html" style="display: flex; align-items: center; text-decoration: none;">
+                        <svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="8" width="20" height="14" rx="1" fill="#c19a49" opacity="0.3"/><path d="M8 12 H22 M8 15 H20 M8 18 H18" stroke="#e6dcbf" stroke-width="1"/><path d="M24 5 L25 4 L26 5 L25 6 Z" fill="#c19a49"/><path d="M15 5 L16 4 L17 5 L16 6 Z" fill="#c19a49"/><path d="M6 5 L7 4 L8 5 L7 6 Z" fill="#c19a49"/><path d="M20 25 L21 24 L22 25 L21 26 Z" fill="#c19a49"/><path d="M10 25 L11 24 L12 25 L11 26 Z" fill="#c19a49"/></svg>
+                        <h3>AI Book</h3>
+                    </a>
+                </div>
+                <ul class="footer-links">
+                    <li><a href="about.html">关于我们</a></li>
+                    <li><a href="terms.html">使用条款</a></li>
+                    <li><a href="privacy.html">隐私政策</a></li>
+                    <li><a href="help.html">帮助中心</a></li>
+                    <li><a href="contact.html">联系我们</a></li>
+                </ul>
+                <div class="copyright">
+                    &copy; 2025 AI Book. 保留所有权利。
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
