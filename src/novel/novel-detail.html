@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inn Book - 小说详情页</title>
+  <link rel="stylesheet" href="novel-style.css">
+  <style>
+    /* 页面内容左右留白 */
+    .page-content-wrapper { padding: 0 100px; }
+    /* 页面标题区 */
+    .page-header-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 40px 0;
+      border-bottom: 1px solid var(--parchment-dark);
+      padding-bottom: 10px;
+    }
+    .page-title { font-size: 32px; color: var(--ink-dark); margin: 0; }
+    /* 书本标题样式 */
+    .page-title-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      cursor: pointer;
+    }
+    .book-icon {
+      width: 50px;
+      height: 60px;
+      perspective: 800px;
+    }
+    .book-icon-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+    .book-icon-inner .spine {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 6px;
+      height: 100%;
+      background: var(--accent-gold);
+      transform: translateX(-50%);
+      border-top-left-radius: 4px;
+      border-bottom-left-radius: 4px;
+      z-index: 3;
+    }
+    .book-icon-inner .cover {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--parchment-dark);
+      color: var(--parchment-light);
+      font-size: 12px;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transform-origin: left center;
+      transform: rotateY(0deg);
+      z-index: 4;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.2);
+      transition: transform 0.6s ease;
+    }
+    .page-title-wrapper:hover .book-icon-inner .cover {
+      transform: rotateY(-65deg);
+    }
+    .book-icon-inner .page {
+      position: absolute;
+      left: 52%;
+      top: 2%;
+      width: 94%;
+      height: 96%;
+      background: var(--parchment-light);
+      color: var(--ink-light);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--parchment-dark);
+      border-radius: 2px;
+      transform-origin: left center;
+      transform: rotateY(0deg);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      z-index: 2;
+    }
+    .page-title-text {
+      font-size: 32px;
+      color: var(--ink-dark);
+      margin: 0;
+    }
+    /* 作品标签 */
+    .tags { 
+      display: flex; 
+      gap: 6px; 
+      margin-left: 0;
+    }
+    .tags .tag {
+      background: linear-gradient(135deg, var(--parchment-light), var(--parchment-medium));
+      color: var(--ink-dark);
+      padding: 2px 6px;
+      border: 1px solid var(--parchment-dark);
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    /* 操作按钮组 */
+    .header-actions { display: flex; gap: 12px; }
+    .btn { padding: 8px 16px; border-radius: 4px; font-weight: 500; text-decoration: none; transition: background 0.3s; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-primary { background: var(--accent-gold); color: var(--parchment-light); }
+    .btn-primary:hover { background: #a88035; }
+    .btn-secondary { background: var(--ink-light); color: var(--parchment-light); }
+    .btn-secondary:hover { background: #444; }
+    .btn-icon {
+      background: transparent;
+      color: var(--parchment-medium);
+      font-size: 18px;
+      padding: 6px;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+    .btn-icon:hover { background: var(--parchment-medium); color: var(--ink-dark); }
+    /* SVG 图标统一尺寸 */
+    .btn-icon svg { width: 20px; height: 20px; }
+    /* 小说简介 */
+    .novel-summary {
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--ink-light);
+      margin-bottom: 40px;
+      padding: 0 20px;
+      border-left: 4px solid var(--accent-gold);
+      background: rgba(241,232,205,0.5);
+      border-radius: 4px;
+    }
+    /* 分区标题 */
+    .section-title {
+      font-size: 24px;
+      color: var(--ink-dark);
+      border-bottom: 2px solid var(--accent-gold);
+      padding-bottom: 5px;
+      margin-bottom: 20px;
+    }
+    /* 通用背景卡片 */
+    .block-card {
+      background: linear-gradient(135deg, var(--parchment-light), var(--parchment-medium));
+      padding: 28px;
+      border-radius: 8px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--parchment-dark);
+      margin-bottom: 40px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .block-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+    }
+    .block-card p { font-size: 15px; line-height: 1.7; color: var(--ink-dark); margin: 0; }
+    /* 横向滚动容器 */
+    .horizontal-scroll {
+      display: flex;
+      overflow-x: auto;
+      gap: 20px;
+      padding-bottom: 10px;
+      margin-bottom: 40px;
+    }
+    .horizontal-scroll::-webkit-scrollbar { height: 6px; }
+    .horizontal-scroll::-webkit-scrollbar-thumb {
+      background-color: var(--parchment-dark);
+      border-radius: 3px;
+    }
+    /* 信息卡片 - 长方形，高比宽，带头像，描述截断 */
+    .info-card {
+      position: relative;
+      flex: 0 0 auto;
+      width: 240px;
+      height: 320px;
+      background: linear-gradient(135deg, var(--parchment-medium), var(--parchment-light));
+      border-radius: 8px;
+      padding: 24px 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--parchment-dark);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+    .info-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+    }
+    .info-card .card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .info-card .avatar-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--parchment-dark);
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 10px;
+    }
+    .info-card .avatar-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--ink-light);
+    }
+    .info-card .title {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--ink-dark);
+      margin: 0;
+      line-height: 1.2;
+    }
+    .info-card .description {
+      font-size: 14px;
+      color: var(--ink-light);
+      line-height: 1.6;
+      flex-grow: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 8;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 0;
+    }
+    /* 章节卡片 */
+    .chapter-card {
+      flex: 0 0 auto;
+      width: 260px;
+      background: linear-gradient(135deg, rgba(245,240,225,0.9), rgba(230,220,191,0.9));
+      border-radius: 8px;
+      border-left: 4px solid var(--accent-gold);
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .chapter-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    }
+    .chapter-card .chapter-num {
+      font-size: 13px;
+      color: var(--accent-red);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .chapter-card .chapter-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--ink-dark);
+      margin: 0;
+      text-shadow: 1px 1px 0 rgba(193,154,73,0.5);
+    }
+    .chapter-card .chapter-desc {
+      font-size: 14px;
+      color: var(--ink-dark);
+      line-height: 1.6;
+      flex-grow: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 5;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin: 0;
+    }
+    .chapter-card .chapter-meta {
+      font-size: 12px;
+      color: var(--ink-light);
+      border-top: 1px dashed var(--parchment-dark);
+      padding-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <a href="homepage.html" style="display: flex; align-items: center; text-decoration: none;">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="8" width="30" height="24" rx="2" fill="#c19a49" opacity="0.3"/><path d="M8 12 H32 M8 16 H28 M8 20 H30 M8 24 H25 M8 28 H22" stroke="#2c1e18" stroke-width="1.5"/><path d="M34 4 L36 6 L34 8 L32 6 Z" fill="#c19a49"/><path d="M20 4 L22 2 L24 4 L22 6 Z" fill="#c19a49"/><path d="M8 4 L10 2 L12 4 L10 6 Z" fill="#c19a49"/><path d="M28 36 L30 34 L32 36 L30 38 Z" fill="#c19a49"/><path d="M14 36 L16 34 L18 36 L16 38 Z" fill="#c19a49"/></svg>
+                        <h1>Inn Book</h1>
+                    </a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="homepage.html">首页</a></li>
+                    <li><a href="creation-mode-list.html" class="active">创作模式</a></li>
+                    <li><a href="game_mode_list.html">游戏模式</a></li>
+                    <li><a href="community-page.html">社区</a></li>
+                    <li><a href="help.html">帮助</a></li>
+                </ul>
+                <div class="user-info">
+                     <a href="dashboard-overview.html" class="avatar">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </a>
+                    <span class="username">李白</span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+  <div class="container page-content-wrapper">
+    <div class="page-header-section">
+      <div class="page-title-wrapper">
+        <div class="book-icon">
+          <div class="book-icon-inner">
+            <div class="spine"></div>
+            <div class="cover">book</div>
+            <div class="page">……</div>
+          </div>
+        </div>
+        <h1 class="page-title-text">《战斗天使：阿丽塔》</h1>
+        <div class="tags">
+          <span class="tag">科幻</span>
+          <span class="tag">赛博朋克</span>
+          <span class="tag">动作</span>
+          <span class="tag">冒险</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a class="btn btn-primary">开始创作</a>
+        <a class="btn btn-secondary">从头阅读</a>
+        <a class="btn btn-icon" title="收藏">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21l-1-1C5 15.5 2 12.5 2 8.5 2 5.4 4.4 3 7.5 3S13 5.4 13 8.5c0-3.1 2.5-5.5 5.5-5.5S24 5.4 24 8.5c0 4-3 7-9 11.5l-1 1z"/></svg>
+        </a>
+        <a class="btn btn-icon" title="导出">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <section>
+      <p class="novel-summary">
+        在未来废墟之城“铁城”中，残存的人类与机械共生，修复的义体工坊中诞生了天才般的少女阿丽塔。迷失的记忆驱使她不断追寻自我，而U.N.城的地下竞技场则见证着她每一次浴血奋战。从废土深处到摩天巨塔，命运之弧引领她踏上解放之路，点燃人类与义体共存的希望。
+      </p>
+
+      <div>
+        <h2 class="section-title">章节目录</h2>
+        <div class="horizontal-scroll">
+          <div class="chapter-card">
+            <div class="chapter-num">章节 01</div>
+            <h3 class="chapter-title">重生</h3>
+            <div class="chapter-desc">Ido 医生在废墟中寻找残骸，意外激活了一具被破坏的义体，这便是阿丽塔重生的开始，她在机械与血肉之间重新找回自我。</div>
+            <div class="chapter-meta">字数：3,200 字 · 更新：2025-05-12</div>
+          </div>
+          <div class="chapter-card">
+            <div class="chapter-num">章节 02</div>
+            <h3 class="chapter-title">猎场竞技</h3>
+            <div class="chapter-desc">初入地下竞技场，阿丽塔凭借超凡格斗本能一举击败对手，赢得了“战斗天使”之名，也引来权力者的注意与追杀。</div>
+            <div class="chapter-meta">字数：4,100 字 · 更新：2025-05-14</div>
+          </div>
+          <div class="chapter-card">
+            <div class="chapter-num">章节 03</div>
+            <h3 class="chapter-title">记忆碎片</h3>
+            <div class="chapter-desc">在废墟深处的秘密实验室，阿丽塔发现了隐藏档案，窥见自己在 Zalem 的过去片段，这段记忆将改变她的命运轨迹。</div>
+            <div class="chapter-meta">字数：3,800 字 · 更新：2025-05-16</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="section-title">世界观设定</h2>
+        <div class="block-card">
+          <p>
+            铁城（Iron City）耸立于末日后的废土之上，挖掘自地底铁矿的庞大结构，支撑千万人口生存与运转。城市之上是璀璨的浮动乌托邦——Zalem，对铁城居民而言遥不可及。铁城中，义体改造工坊遍布，平民以竞技场生死决斗换取生计与希望。走私贩、黑市商人与权力集团暗中角逐，阿丽塔在失忆与自我探索的旅程中，将揭开Zalem的真相，并挑起改变世界的火花。
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="section-title">主要角色</h2>
+        <div class="horizontal-scroll">
+          <div class="info-card">
+            <div class="card-header">
+              <div class="avatar-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg></div>
+              <h3 class="title">阿丽塔 (Alita)</h3>
+            </div>
+            <div class="description">一具被Dr. Ido修复的破损义体，原为第44号猎杀官的战斗机器，后被赋予人性。她以惊人的格斗天赋在竞技场中崭露头角，却同时困惑于自己失落的记忆与未知的过去。</div>
+          </div>
+          <div class="info-card">
+            <div class="card-header">
+              <div class="avatar-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg></div>
+              <h3 class="title">伊德医生 (Dr. Ido)</h3>
+            </div>
+            <div class="description">铁城内著名义体医生，拥有高超医术并热忱救治伤痛义体。他如同父亲一般照顾阿丽塔，并在她探索身世路上给予指引。他的过去亦藏有不为人知的秘密。</div>
+          </div>
+          <div class="info-card">
+            <div class="card-header">
+              <div class="avatar-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg></div>
+              <h3 class="title">胡里奥 (Hugo)</h3>
+            </div>
+            <div class="description">底层少年，胸怀升入Zalem的梦想，为此不惜参与危险的义体走私与竞技战斗。他与阿丽塔惺惺相惜，并共同面对铁城的残酷现实。</div>
+          </div>
+          <div class="info-card">
+            <div class="card-header">
+              <div class="avatar-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg></div>
+              <h3 class="title">缇玛 (Tia)</h3>
+            </div>
+            <div class="description">铁城巴隆酒吧的歌手，以妩媚歌声掩饰内心的坚韧。她是阿丽塔的朋友，常为她提供情报与庇护，但她自己的命运亦危机重重。</div>
+          </div>
+          <div class="info-card">
+            <div class="card-header">
+              <div class="avatar-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg></div>
+              <h3 class="title">尤柯 (Vector)</h3>
+            </div>
+            <div class="description">铁城最具势力的黑市头目，操控竞技场、义体走私与权力交易。他与阿丽塔及Dr. Ido冲突不断，掌握着阻挡他们真相的关键力量。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-logo">
+          <a href="homepage.html" class="logo-link">
+            <svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+              <rect x="5" y="8" width="20" height="14" rx="1" fill="#c19a49" opacity="0.3"/>
+              <path d="M8 12 H22 M8 15 H20 M8 18 H18" stroke="#e6dcbf" stroke-width="1"/>
+            </svg>
+            <h3>InnBook</h3>
+          </a>
+        </div>
+        <ul class="footer-links">
+          <li><a href="about.html">关于我们</a></li>
+          <li><a href="terms.html">使用条款</a></li>
+          <li><a href="privacy.html">隐私政策</a></li>
+          <li><a href="help.html">帮助中心</a></li>
+          <li><a href="contact.html">联系我们</a></li>
+        </ul>
+        <div class="copyright">
+          &copy; 2025 InnBook. 保留所有权利。
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
