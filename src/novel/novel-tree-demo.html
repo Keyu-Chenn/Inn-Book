@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inn Book - 小说情景编辑页</title>
+  <link rel="stylesheet" href="novel-editor.css">
+</head>
+<body>
+    <header>
+        <nav class="editor-nav editor-container">
+            <div class="logo-area">
+                <a href="novel-detail.html" title="返回作品列表" style="display: flex; align-items: center; text-decoration: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    <h1>Inn Book 编辑器</h1>
+                </a>
+            </div>
+            <div class="document-title-area">
+                <input type="text" class="document-title-input" value="《龙痕年代：序章》" placeholder="输入作品标题...">
+            </div>
+            <div class="actions-area">
+                <a href="novel-editor-demo.html">
+                  <button class="btn-editor btn-editor-outline" title="切换情景/文本模式">文本模式</button>
+                </a>
+                <button class="btn-icon btn-save" title="保存">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                  </svg>
+                </button>
+                <button class="btn-icon btn-export" title="导出">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </button>
+                <div class="user-info">
+                    <a href="dashboard-overview.html" class="avatar">
+                        <svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="editor-layout editor-container">
+        <aside class="sidebar-panel">
+            <h3>章节列表</h3>
+            <ul id="chapterList" class="chapter-list scrollable-list">
+              <li draggable="true"><a contenteditable="false" href="#" class="active">第一章：巨龙的苏醒</a></li>
+              <li draggable="true"><a contenteditable="false" href="#">第二章：启程的号角</a></li>
+              <li draggable="true"><a contenteditable="false" href="#">第三章：迷雾森林的试炼</a></li>
+              <li draggable="true"><a contenteditable="false" href="#">第四章：失落的龙骑士遗迹</a></li>
+            </ul>
+            <a id="addChapter" class="btn-add-chapter">
+              <svg viewBox="0 0 16 16" fill="currentColor" style="width:14px; height:14px; margin-right:5px; vertical-align:middle;">
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+              </svg>
+              添加新章节
+            </a>
+            
+            <div style="margin-top:5px; padding-top:5px;">
+              <h3>主要角色</h3>
+              <ul class="character-list scrollable-list">
+                <li>
+                  <svg viewBox="0 0 24 24" class="char-icon" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v2"/></svg>
+                  <span contenteditable>阿丽塔</span>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" class="char-icon" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v2"/></svg>
+                  <span contenteditable>伊德</span>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" class="char-icon" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v2"/></svg>
+                  <span contenteditable>西塔</span>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" class="char-icon" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v2"/></svg>
+                  <span contenteditable>伊莱亚斯</span>
+                </li>
+              </ul>
+            </div>
+        </aside>
+        <main class="main-editor-area" style="min-width: 1000px;">
+          <div class="scenes-wrapper">
+            <h3 id="scenesHeader">全部场景</h3>
+            <div id="scenesList" class="scenes-columns"></div>
+          </div>
+        </main>
+    </div>
+
+
+<!-- Footer is intentionally omitted for a distraction-free editor experience -->
+<script>
+  const chapterList = document.getElementById('chapterList');
+  const addChapterBtn = document.getElementById('addChapter');
+  const scenesList = document.getElementById('scenesList');
+  const scenesHeader = document.getElementById('scenesHeader');
+  
+  // 场景数据示例，每章场景数量不同
+  const scenesData = {
+  // 第一章：order 1-2
+  1: [
+    { num: '01-1', title: '龙印显现', desc: '阿丽塔与伊德同时见证龙印重现。', roles: ['阿丽塔','伊德'], meta: '2025-05-12 · 已完成', order: 1 },
+    { num: '01-3', title: '村民惊慌', desc: '村民们对龙印现象惊慌失措。', roles: ['西塔','伊莱亚斯'], meta: '2025-05-12 · 进行中', order: 1 },
+    { num: '01-2', title: '智者预言', desc: '伊莱亚斯揭示命运，西塔记录真相。', roles: ['伊莱亚斯','西塔'], meta: '2025-05-12 · 进行中', order: 2 }
+  ],
+
+  // 第二章：order 3-5
+  2: [
+    { num: '02-1', title: '黎明集结', desc: '伊德、阿丽塔与西塔共议对策。', roles: ['伊德','阿丽塔','西塔'], meta: '2025-05-14 · 已完成', order: 3 },
+    { num: '02-4', title: '傍晚商议', desc: '阿丽塔与伊莱亚斯研讨下一步行动。', roles: ['阿丽塔','伊莱亚斯'], meta: '2025-05-14 · 已完成', order: 4 },
+    { num: '02-2', title: '夜袭突围', desc: '西塔与伊德携手突破封锁。', roles: ['西塔','伊德'], meta: '2025-05-14 · 进行中', order: 4 },
+    { num: '02-3', title: '师徒再会', desc: '阿丽塔偶遇伊莱亚斯，重燃希望。', roles: ['阿丽塔','伊莱亚斯'], meta: '2025-05-15 · 初始化', order: 5 }
+  ],
+
+  // 第三章：order 6-7
+  3: [
+    { num: '03-1', title: '迷雾探秘', desc: '西塔与伊莱亚斯联手解谜雾中符文。', roles: ['西塔','伊莱亚斯'], meta: '2025-05-16 · 已完成', order: 6 },
+    { num: '03-3', title: '暗影潜伏', desc: '阿丽塔与伊德在迷雾中相互掩护。', roles: ['阿丽塔','伊德'], meta: '2025-05-16 · 进行中', order: 6 },
+    { num: '03-2', title: '利刃突袭', desc: '阿丽塔单骑冲锋，孤身斩敌。', roles: ['阿丽塔'], meta: '2025-05-16 · 进行中', order: 7 }
+  ],
+
+  // 第四章：order 8-9-10
+  4: [
+    { num: '04-4', title: '祭坛守护', desc: '阿丽塔与伊莱亚斯共同守护祭坛。', roles: ['阿丽塔','伊莱亚斯'], meta: '2025-05-17 · 初始化', order: 8 },
+    { num: '04-1', title: '遗迹突入', desc: '伊德与西塔协同穿越机关。', roles: ['伊德','西塔'], meta: '2025-05-17 · 初始化', order: 8 },
+    { num: '04-2', title: '圣殿之光', desc: '阿丽塔觉醒力量，引导光芒。', roles: ['阿丽塔'], meta: '2025-05-17 · 已完成', order: 9 },
+    { num: '04-5', title: '仪式觉醒', desc: '西塔与伊德在光芒中领悟古律。', roles: ['西塔','伊德'], meta: '2025-05-18 · 进行中', order: 9 },
+    { num: '04-3', title: '真相裂隙', desc: '伊莱亚斯揭开龙骑士遗落秘密。', roles: ['伊莱亚斯'], meta: '2025-05-18 · 进行中', order: 10 }
+  ]
+};
+
+  // 渲染指定章节的场景
+  function renderScenes(chapterIdx) {
+    // 标题切换
+    if (chapterIdx) {
+      scenesHeader.textContent = `第${chapterIdx}章 场景`;
+    } else {
+      scenesHeader.textContent = '全部场景';
+    }
+
+    scenesList.innerHTML = '';
+    // 拿到当前章节或全部场景
+    const list = chapterIdx ? scenesData[chapterIdx] || [] : 
+                Object.values(scenesData).flat();
+
+    // 分组：order -> 场景数组
+    const groups = {};
+    list.forEach(s => {
+      (groups[s.order] = groups[s.order] || []).push(s);
+    });
+    // 排序 order
+    const orders = Object.keys(groups).map(n=>+n).sort((a,b)=>a-b);
+
+    // 按列渲染
+    orders.forEach((ord, idx) => {
+      const col = document.createElement('div');
+      col.className = 'scenes-column';
+      groups[ord].forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'scene-card';
+        card.innerHTML = `
+          <svg class="edit-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="#888" stroke-width="2" fill="none"/></svg>
+          <div class="scene-num">${s.num}</div>
+          <h4 class="scene-title">${s.title}</h4>
+          <p class="scene-desc">${s.desc}</p>
+          <div class="scene-roles">角色：${s.roles.join('、')}</div>
+          <div class="scene-meta">${s.meta}</div>
+        `;
+        col.appendChild(card);
+      });
+      scenesList.appendChild(col);
+
+      // 如果不是最后一列，插入横向箭头
+      if (idx < orders.length - 1) {
+        const arrow = document.createElement('div');
+        arrow.className = 'scene-arrow';
+        arrow.textContent = '→';
+        scenesList.appendChild(arrow);
+      }
+    });
+  }
+
+  // 初始化
+  renderScenes();  // 默认全部场景
+
+  // 切换章节联动场景与高亮
+  chapterList.addEventListener('click', e => {
+    if (e.target.tagName === 'A') {
+      // 切换高亮
+      chapterList.querySelectorAll('a.active').forEach(el => el.classList.remove('active'));
+      e.target.classList.add('active');
+      // 提取中文章序号
+      const text = e.target.textContent;
+      const match = text.match(/第(.+?)章/);
+      const cnMap = { '一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10 };
+      let idx = null;
+      if (match) {
+        idx = cnMap[match[1]] || null;
+      }
+      if (idx) renderScenes(idx);
+    }
+  });
+
+  // 添加新章节按钮逻辑
+  addChapterBtn.addEventListener('click', () => {
+    const count = chapterList.children.length + 1;
+    const li = document.createElement('li'); li.setAttribute('draggable', 'true');
+    const a = document.createElement('a'); a.href = '#'; a.contentEditable = 'true';
+    a.textContent = `第${String(count).padStart(2,'0')}章：新章节`;
+    li.appendChild(a); chapterList.appendChild(li);
+    initDragAndDrop();
+  });
+
+  // 拖拽排序
+  function initDragAndDrop() {
+    let dragSrc;
+    Array.from(chapterList.children).forEach(li => {
+      li.addEventListener('dragstart', () => { dragSrc = li; li.classList.add('dragging'); });
+      li.addEventListener('dragend', () => li.classList.remove('dragging'));
+      li.addEventListener('dragover', e => e.preventDefault());
+      li.addEventListener('drop', e => {
+        e.preventDefault();
+        if (dragSrc !== li) {
+          const nodes = [...chapterList.children];
+          const srcIdx = nodes.indexOf(dragSrc), tgtIdx = nodes.indexOf(li);
+          if (srcIdx < tgtIdx) li.after(dragSrc); else li.before(dragSrc);
+        }
+      });
+    });
+  }
+  initDragAndDrop();
+</script>
+</body>
+</html>
