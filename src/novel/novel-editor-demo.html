@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inn Book - 小说文本编辑页</title>
+  <link rel="stylesheet" href="novel-editor.css">
+</head>
+<body>
+    <header>
+        <nav class="editor-nav editor-container">
+            <div class="logo-area">
+                <a href="novel-detail.html" title="返回作品列表" style="display: flex; align-items: center; text-decoration: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    <h1>Inn Book 编辑器</h1>
+                </a>
+            </div>
+            <div class="document-title-area">
+                <input type="text" class="document-title-input" value="《龙痕年代：序章》" placeholder="输入作品标题...">
+            </div>
+            <div class="actions-area">
+                <a href="novel-tree-demo.html">
+                  <button class="btn-editor btn-editor-outline" title="切换情景/文本模式">情景模式</button>
+                </a>
+                <button class="btn-icon btn-save" title="保存">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                  </svg>
+                </button>
+                <button class="btn-icon btn-export" title="导出">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </button>
+                <div class="user-info">
+                    <a href="dashboard-overview.html" class="avatar">
+                        <svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="editor-layout editor-container">
+        <aside class="sidebar-panel">
+            <h3>章节列表</h3>
+            <ul id="chapterList" class="chapter-list scrollable-list">
+              <li draggable="true"><a contenteditable="false" href="#" class="active">第一章：巨龙的苏醒</a></li>
+              <li draggable="true"><a contenteditable="false" href="#">第二章：启程的号角</a></li>
+              <li draggable="true"><a contenteditable="false" href="#">第三章：迷雾森林的试炼</a></li>
+              <li draggable="true"><a contenteditable="false" href="#">第四章：失落的龙骑士遗迹</a></li>
+            </ul>
+            <a id="addChapter" class="btn-add-chapter">
+              <svg viewBox="0 0 16 16" fill="currentColor" style="width:14px; height:14px; margin-right:5px; vertical-align:middle;">
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+              </svg>
+              添加新章节
+            </a>
+            
+            <div class="ai-tools-panel" style="margin-top:5px; padding-top:5px;">
+                <h3>AI 写作工具</h3>
+                <button class="btn-ai-tool">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    情节发展建议
+                </button>
+                <button class="btn-ai-tool">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"></circle><path d="M5.5 21v-2a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v2"></path></svg>
+                    角色塑造助手
+                </button>
+                 <button class="btn-ai-tool">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    世界观构建器
+                </button>
+                <button class="btn-ai-tool">
+                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    AI续写/润色
+                </button>
+            </div>
+        </aside>
+        <main class="main-editor-area" style="min-width: 1000px;">
+            <div class="editor-paper">
+                <textarea class="editor-textarea" placeholder="开始书写您的传奇故事...">第一章 巨龙的苏醒
+
+夜色如墨，寒风呼啸着穿过破碎的窗棂，在古老的塔楼中断断续续地呜咽。塔顶的房间里，唯一的火光来自壁炉中苟延残喘的余烬，映照着一张年轻而焦虑的脸庞。
+
+亚瑟紧了紧身上单薄的斗篷，目光不时地投向窗外那片被黑雾笼罩的山脉——龙眠山脉，一个连传说都讳莫如深的地方。村里的老人们说，那里沉睡着足以毁灭世界的巨龙。而今夜，山脉深处传来的低沉咆哮，似乎印证了这个古老的传说。
+
+“导师，您确定……我们必须这么做吗？”亚瑟的声音带着一丝不易察觉的颤抖，望向房间另一侧那个背对着他，凝视着星空的老者。
+
+老者缓缓转过身，他满脸皱纹，眼神却如同最明亮的星辰般深邃。他是村里唯一的智者，也是亚瑟的导师，伊莱亚斯。
+
+“孩子，”伊莱亚斯的声音平静而苍老，“预言之轮已经开始转动。巨龙的苏醒并非偶然，它预示着一个时代的终结，以及另一个时代的开启。而你，亚瑟，便是那开启新时代的关键。”
+
+亚瑟的心猛地一沉。他只是一个普通的山村少年，除了比同龄人多读了几本古籍，懂得一些草药知识外，实在看不出自己有何“关键”之处。
+
+“可是我……”
+
+“我知道你的疑虑，”伊莱亚斯打断了他，从怀中取出一枚古朴的徽章，递给亚瑟。“这是龙骑士的信物。传说中，只有真正的龙骑士才能唤醒并驾驭巨龙。而你，是数百年来唯一能让这枚徽章产生共鸣的人。”
+
+亚瑟接过徽章，入手冰凉，上面雕刻着一条栩栩如生的盘龙，龙眼处镶嵌着一颗黯淡无光的宝石。他从未感受到这枚徽章有任何异样。
+
+就在此时，山脉深处的咆哮声再次传来，比之前任何一次都要响亮，仿佛整个塔楼都在随之震动。壁炉中的火焰猛地跳动了一下，几乎熄灭。
+
+伊莱亚斯的神情变得无比凝重：“时间不多了，亚瑟。你必须在黎明之前到达龙眠山脉的顶峰，找到那头苏醒的巨龙。否则，一旦它完全挣脱束缚，整个王国都将化为焦土。”
+</textarea>
+            </div>
+        </main>
+    </div>
+
+
+<!-- Footer is intentionally omitted for a distraction-free editor experience -->
+<script>
+    // 添加新章节
+    const chapterList = document.getElementById('chapterList');
+    document.getElementById('addChapter').addEventListener('click', () => {
+      const count = chapterList.children.length + 1;
+      const li = document.createElement('li');
+      li.setAttribute('draggable','true');
+      const a = document.createElement('a');
+      a.setAttribute('href','#'); a.setAttribute('contenteditable','true');
+      a.textContent = `第${String(count).padStart(2,'0')}章：新章节`;
+      li.appendChild(a);
+      chapterList.appendChild(li);
+      initDragAndDrop();
+    });
+
+    // 切换 active
+    chapterList.addEventListener('click', e => {
+      if(e.target.tagName==='A'){
+        chapterList.querySelectorAll('a.active').forEach(el=>el.classList.remove('active'));
+        e.target.classList.add('active');
+      }
+    });
+
+    // 拖拽排序
+    function initDragAndDrop(){
+      let dragSrc;
+      Array.from(chapterList.children).forEach(li=>{
+        li.addEventListener('dragstart', e=>{ dragSrc=li; li.classList.add('dragging'); });
+        li.addEventListener('dragend', e=> li.classList.remove('dragging'));
+        li.addEventListener('dragover', e=>{ e.preventDefault(); });
+        li.addEventListener('drop', e=>{
+          e.preventDefault();
+          if(dragSrc!==li){
+            const nodes=[...chapterList.children];
+            const srcIdx=nodes.indexOf(dragSrc), tgtIdx=nodes.indexOf(li);
+            if(srcIdx<tgtIdx) li.after(dragSrc); else li.before(dragSrc);
+          }
+        });
+      });
+    }
+    initDragAndDrop();
+  </script>
+</body>
+</html>
