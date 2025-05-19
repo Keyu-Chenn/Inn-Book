@@ -80,7 +80,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onUnmounted, computed } from 'vue'
+import { ref, nextTick, onUnmounted, computed, inject, onMounted } from 'vue'
 import { InfoFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 
@@ -286,6 +286,18 @@ const genres = [
   }
 ]
 
+// 添加题材映射关系
+const genreMapping = {
+  '奇幻': 'fantasy',
+  '科幻': 'scifi',
+  '武侠/仙侠': 'wuxia',
+  '现代都市': 'modern',
+  '历史架空': 'historical',
+  '末世废土': 'postapocalyptic',
+  '赛博朋克': 'cyberpunk',
+  '悬疑/恐怖': 'horror'
+}
+
 const tones = [
   {
     label: '史诗/宏大',
@@ -355,6 +367,21 @@ const tones = [
   }
 ]
 
+// 添加基调映射关系
+const toneMapping = {
+  '史诗/宏大': 'epic',
+  '黑暗/冷峻': 'dark',
+  '轻松/幽默': 'lighthearted',
+  '神秘/未知': 'mysterious',
+  '希望/治愈': 'hopeful',
+  '严肃/写实': 'serious',
+  '浪漫/诗意': 'romantic',
+  '残酷/挣扎': 'gritty',
+  '温馨/日常': 'cozy',
+  '冒险/热血': 'adventurous',
+  '怪诞/荒谬': 'bizarre'
+}
+
 function toggleTone(val) {
   const idx = form.value.tones.indexOf(val)
   if (idx === -1) {
@@ -367,6 +394,22 @@ function toggleTone(val) {
     form.value.tones.splice(idx, 1)
   }
 }
+
+const worldEditData = inject('worldEditData', null)
+
+onMounted(() => {
+  if (worldEditData && worldEditData.value && worldEditData.value.essence) {
+    form.value.name = worldEditData.value.name || ''
+    form.value.attraction = worldEditData.value.essence.core || ''
+    // 题材风格映射
+    const genreText = worldEditData.value.essence.genre || ''
+    form.value.genre = genreMapping[genreText] || ''
+    // 基调映射
+    const toneTexts = Array.isArray(worldEditData.value.essence.tones) ? worldEditData.value.essence.tones : []
+    const mappedTones = toneTexts.map(t => toneMapping[t]).filter(Boolean)
+    form.value.tones = mappedTones.length ? mappedTones : []
+  }
+})
 </script>
 
 <style lang="scss">

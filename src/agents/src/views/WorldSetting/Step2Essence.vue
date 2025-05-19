@@ -7,28 +7,17 @@
         <div class="tech-level-container">
           <div class="custom-slider">
             <div class="slider-track">
-              <div 
-                class="slider-progress" 
-                :style="{ width: `${(activeIndex/(sliderMarks.length-1))*100}%` }"
-              ></div>
-              <div 
-                v-for="(mark, idx) in sliderMarks" 
-                :key="mark.value"
-                class="slider-mark"
+              <div class="slider-progress" :style="{ width: `${(activeIndex / (sliderMarks.length - 1)) * 100}%` }">
+              </div>
+              <div v-for="(mark, idx) in sliderMarks" :key="mark.value" class="slider-mark"
                 :class="{ active: form.techLevel === mark.value }"
-                :style="{ left: `${(idx/(sliderMarks.length-1))*100}%` }"
-                @click="handleMarkClick(mark.value)"
-              >
+                :style="{ left: `${(idx / (sliderMarks.length - 1)) * 100}%` }" @click="handleMarkClick(mark.value)">
                 <span class="mark-icon">{{ mark.icon }}</span>
               </div>
             </div>
             <div class="slider-labels">
-              <div 
-                v-for="(mark, idx) in sliderMarks" 
-                :key="'label-'+mark.value"
-                class="slider-label"
-                :style="{ left: `${(idx/(sliderMarks.length-1))*100}%` }"
-              >
+              <div v-for="(mark, idx) in sliderMarks" :key="'label-' + mark.value" class="slider-label"
+                :style="{ left: `${(idx / (sliderMarks.length - 1)) * 100}%` }">
                 {{ mark.label }}
               </div>
             </div>
@@ -44,26 +33,19 @@
         <div class="geography-container">
           <div class="map-upload-area" @click="triggerMapUpload" :class="{ 'has-map': form.mapUrl }">
             <template v-if="!form.mapUrl">
-              <el-icon class="upload-icon"><Plus /></el-icon>
+              <el-icon class="upload-icon">
+                <Plus />
+              </el-icon>
               <span class="upload-text">点击上传世界地图</span>
               <span class="upload-hint">支持 JPG、PNG 格式，建议尺寸 1920x1080</span>
             </template>
             <img v-else :src="form.mapUrl" class="preview-image" />
-            <input
-              type="file"
-              ref="mapInput"
-              accept="image/jpeg,image/png"
-              style="display: none"
-              @change="handleMapUpload"
-            />
+            <input type="file" ref="mapInput" accept="image/jpeg,image/png" style="display: none"
+              @change="handleMapUpload" />
           </div>
           <div class="map-description">
-            <el-input
-              type="textarea"
-              v-model="form.geographyDescription"
-              :rows="3"
-              placeholder="描述这个世界的地理特征、气候、地形等..."
-            />
+            <el-input type="textarea" v-model="form.geographyDescription" :rows="3"
+              placeholder="描述这个世界的地理特征、气候、地形等..." />
           </div>
         </div>
       </el-form-item>
@@ -75,31 +57,18 @@
           <div class="rule-section">
             <div class="rule-header">
               <span class="rule-title">特殊物理法则</span>
-              <el-switch
-                v-model="form.hasSpecialPhysics"
-                class="rule-switch"
-                active-text="启用"
-                inactive-text="禁用"
-              />
+              <el-switch v-model="form.hasSpecialPhysics" class="rule-switch" active-text="启用" inactive-text="禁用" />
             </div>
-            
+
             <div v-if="form.hasSpecialPhysics" class="rules-list">
               <div v-for="(rule, index) in form.physicsRules" :key="index" class="rule-item">
-                <el-input
-                  v-model="form.physicsRules[index]"
-                  placeholder="输入特殊物理法则..."
-                >
+                <el-input v-model="form.physicsRules[index]" placeholder="输入特殊物理法则...">
                   <template #append>
                     <el-button @click="removePhysicsRule(index)" :icon="Delete" />
                   </template>
                 </el-input>
               </div>
-              <el-button
-                type="primary"
-                plain
-                @click="addPhysicsRule"
-                class="add-rule-button"
-              >
+              <el-button type="primary" plain @click="addPhysicsRule" class="add-rule-button">
                 添加法则
               </el-button>
             </div>
@@ -109,21 +78,12 @@
           <div class="rule-section">
             <div class="rule-header">
               <span class="rule-title">魔法/超自然力量</span>
-              <el-switch
-                v-model="form.hasMagic"
-                class="rule-switch"
-                active-text="启用"
-                inactive-text="禁用"
-              />
+              <el-switch v-model="form.hasMagic" class="rule-switch" active-text="启用" inactive-text="禁用" />
             </div>
-            
+
             <div v-if="form.hasMagic" class="magic-system-container">
-              <el-input
-                type="textarea"
-                v-model="form.magicSystem"
-                :rows="6"
-                placeholder="详细描述这个世界的魔法/超自然力量体系，包括：&#10;1. 力量的来源&#10;2. 使用方式与限制&#10;3. 对世界的影响&#10;4. 特殊规则..."
-              />
+              <el-input type="textarea" v-model="form.magicSystem" :rows="6"
+                placeholder="详细描述这个世界的魔法/超自然力量体系，包括：&#10;1. 力量的来源&#10;2. 使用方式与限制&#10;3. 对世界的影响&#10;4. 特殊规则..." />
             </div>
           </div>
         </div>
@@ -135,11 +95,7 @@
       <el-button @click="goToPreviousStep" class="nav-button prev-button">
         上一步
       </el-button>
-      <el-button
-        type="primary"
-        @click="goToNextStep"
-        class="nav-button next-button"
-      >
+      <el-button type="primary" @click="goToNextStep" class="nav-button next-button">
         下一步
       </el-button>
     </div>
@@ -147,11 +103,12 @@
 </template>
 
 <script setup>
-import { ref, computed, defineEmits } from 'vue'
+import { ref, computed, defineEmits, inject, onMounted } from 'vue'
 import { Plus, Delete } from '@element-plus/icons-vue'
 
 const emit = defineEmits(['update:currentStep'])
 const mapInput = ref(null)
+const worldEditData = inject('worldEditData', null)
 
 // 表单数据
 const form = ref({
@@ -232,10 +189,10 @@ const removePhysicsRule = (index) => {
 
 // 表单验证
 const isFormValid = computed(() => {
-  return form.value.mapUrl !== '' && 
-         form.value.geographyDescription.trim() !== '' &&
-         (!form.value.hasSpecialPhysics || form.value.physicsRules.some(rule => rule.trim() !== '')) &&
-         (!form.value.hasMagic || form.value.magicSystem.trim() !== '')
+  return form.value.mapUrl !== '' &&
+    form.value.geographyDescription.trim() !== '' &&
+    (!form.value.hasSpecialPhysics || form.value.physicsRules.some(rule => rule.trim() !== '')) &&
+    (!form.value.hasMagic || form.value.magicSystem.trim() !== '')
 })
 
 // 上一步
@@ -247,6 +204,32 @@ const goToPreviousStep = () => {
 const goToNextStep = () => {
   emit('update:currentStep', 3)
 }
+
+onMounted(() => {
+  if (worldEditData && worldEditData.value && worldEditData.value.reality) {
+    // 科技水平
+    form.value.techLevel = worldEditData.value.reality.techLevel || 5
+    // 地理环境
+    form.value.mapUrl = worldEditData.value.reality.mapUrl || ''
+    form.value.geographyDescription = worldEditData.value.reality.geography || ''
+    // 特殊物理法则
+    if (Array.isArray(worldEditData.value.reality.physicalLaws) && worldEditData.value.reality.physicalLaws.length) {
+      form.value.hasSpecialPhysics = true
+      form.value.physicsRules = [...worldEditData.value.reality.physicalLaws]
+    } else {
+      form.value.hasSpecialPhysics = false
+      form.value.physicsRules = ['']
+    }
+    // 魔法体系
+    if (worldEditData.value.reality.magicSystem && worldEditData.value.reality.magicSystem !== '无') {
+      form.value.hasMagic = true
+      form.value.magicSystem = worldEditData.value.reality.magicSystem
+    } else {
+      form.value.hasMagic = false
+      form.value.magicSystem = ''
+    }
+  }
+})
 </script>
 
 <style lang="scss" scoped>
@@ -351,6 +334,7 @@ const goToNextStep = () => {
     border-color: #8B4513;
     transform: translate(-50%, -50%) scale(1.1);
     box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
+
     .mark-icon {
       color: #fff;
     }
@@ -578,4 +562,4 @@ const goToNextStep = () => {
     width: 100%;
   }
 }
-</style> 
+</style>
