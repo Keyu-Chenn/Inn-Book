@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GM房间控制台</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://www.transparenttextures.com/patterns/old-map.png');
+            background-color: #f4e4bc;
+        }
+        .parchment {
+            background-color: #f9f3e6;
+            background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+            border: 1px solid #d4c4a8;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .vintage-text {
+            color: #4a3728;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .vintage-button {
+            background-color: #8b7355;
+            color: #f9f3e6;
+            border: 1px solid #6b4f3f;
+            transition: all 0.3s ease;
+        }
+        .vintage-button:hover {
+            background-color: #6b4f3f;
+            transform: translateY(-1px);
+        }
+        .vintage-input {
+            background-color: #fff9f0;
+            border: 1px solid #d4c4a8;
+            color: #4a3728;
+        }
+        .vintage-input:focus {
+            border-color: #8b7355;
+            box-shadow: 0 0 0 2px rgba(139, 115, 85, 0.2);
+        }
+        .scroll-container {
+            scrollbar-width: thin;
+            scrollbar-color: #8b7355 #f9f3e6;
+        }
+        .scroll-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scroll-container::-webkit-scrollbar-track {
+            background: #f9f3e6;
+        }
+        .scroll-container::-webkit-scrollbar-thumb {
+            background-color: #8b7355;
+            border-radius: 4px;
+        }
+        .player-slot {
+            transition: all 0.3s ease;
+        }
+        .player-slot:hover {
+            transform: translateY(-2px);
+        }
+        .player-slot.empty {
+            border: 2px dashed #8b7355;
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: relative;
+            background-color: #f9f3e6;
+            margin: 15% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #8b7355;
+        }
+        .close-modal:hover {
+            color: #6b4f3f;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen">
+        <!-- 顶部导航栏 -->
+        <nav class="parchment shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold vintage-text">GM控制台</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="vintage-button px-4 py-2 rounded-md" onclick="saveSettings()">
+                            <i class="fas fa-save mr-2"></i>保存设置
+                        </button>
+                        <button class="vintage-button px-4 py-2 rounded-md bg-red-800 hover:bg-red-900" onclick="exitGame()">
+                            <i class="fas fa-power-off mr-2"></i>结束游戏
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主要内容区 -->
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="grid grid-cols-12 gap-6">
+                <!-- 左侧面板：房间信息 -->
+                <div class="col-span-3">
+                    <div class="parchment rounded-lg p-4">
+                        <h2 class="text-xl font-semibold mb-4 vintage-text">房间信息</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium vintage-text">房间ID</label>
+                                <input type="text" id="roomIdInput" class="vintage-input mt-1 block w-full rounded-md shadow-sm" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium vintage-text">房间名称</label>
+                                <input type="text" id="roomNameInput" class="vintage-input mt-1 block w-full rounded-md shadow-sm" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium vintage-text">房间状态</label>
+                                <select id="roomStatusSelect" class="vintage-input mt-1 block w-full rounded-md shadow-sm" onchange="updateRoomStatus(this.value)">
+                                    <option value="waiting">等待中</option>
+                                    <option value="playing">进行中</option>
+                                    <option value="paused">暂停</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium vintage-text">当前世界观</label>
+                                <div class="vintage-input mt-1 block w-full rounded-md shadow-sm p-2">
+                                    <p id="worldName" class="text-sm">加载中...</p>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium vintage-text">玩家数量</label>
+                                <div class="vintage-input mt-1 block w-full rounded-md shadow-sm p-2">
+                                    <p id="playerCount" class="text-sm">0/4</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 中间面板：玩家列表 -->
+                <div class="col-span-4">
+                    <div class="parchment rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold vintage-text">玩家列表</h2>
+                            <div class="flex space-x-2">
+                                <select class="vintage-input px-3 py-1 rounded-md" onchange="updateMaxPlayers(this.value)">
+                                    <option value="2">2人</option>
+                                    <option value="3">3人</option>
+                                    <option value="4">4人</option>
+                                    <option value="5">5人</option>
+                                    <option value="6">6人</option>
+                                </select>
+                                <button class="vintage-button px-3 py-1 rounded-md" onclick="showInviteModal()">
+                                    <i class="fas fa-user-plus mr-1"></i>邀请玩家
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4" id="playerList">
+                            <!-- 玩家槽位将通过 JavaScript 动态生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧面板：Prompt控制 -->
+                <div class="col-span-5">
+                    <div class="parchment rounded-lg p-4">
+                        <h2 class="text-xl font-semibold mb-4 vintage-text">Prompt控制</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium vintage-text">当前场景</label>
+                                <textarea id="promptInput" class="vintage-input mt-1 block w-full rounded-md shadow-sm" rows="3" placeholder="输入场景描述..."></textarea>
+                                <button id="sendPromptButton" class="vintage-button w-full mt-2 p-2 rounded-md">
+                                    <i class="fas fa-paper-plane mr-2"></i>发送Prompt
+                                </button>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium vintage-text">分支控制</label>
+                                <div class="grid grid-cols-2 gap-2 mt-1">
+                                    <button class="vintage-button p-2 rounded-md" onclick="switchBranch('A')">分支A</button>
+                                    <button class="vintage-button p-2 rounded-md" onclick="switchBranch('B')">分支B</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium vintage-text">参数调整</label>
+                                <div class="space-y-2 mt-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="vintage-text">难度系数</span>
+                                        <input type="range" id="difficultySlider" class="w-32 accent-8b7355" min="1" max="10" value="5" onchange="updateDifficulty(this.value)">
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="vintage-text">剧情复杂度</span>
+                                        <input type="range" id="complexitySlider" class="w-32 accent-8b7355" min="1" max="10" value="5" onchange="updateComplexity(this.value)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部面板：游戏日志 -->
+            <div class="mt-6">
+                <div class="parchment rounded-lg p-4">
+                    <h2 class="text-xl font-semibold mb-4 vintage-text">游戏日志</h2>
+                    <div class="space-y-4">
+                        <div class="h-64 bg-fff9f0 rounded-md p-3 overflow-y-auto scroll-container">
+                            <div class="space-y-2" id="gameLog">
+                                <!-- 日志内容将通过 JavaScript 动态添加 -->
+                            </div>
+                        </div>
+                        <div>
+                            <textarea id="messageInput" class="vintage-input w-full rounded-md p-2" rows="3" placeholder="输入系统消息或GM指令..."></textarea>
+                            <button id="sendButton" class="vintage-button w-full mt-2 p-2 rounded-md">
+                                <i class="fas fa-paper-plane mr-2"></i>发送
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 邀请玩家弹窗 -->
+    <div id="inviteModal" class="modal">
+        <div class="modal-content parchment">
+            <span class="close-modal" onclick="closeInviteModal()">&times;</span>
+            <h2 class="text-xl font-bold vintage-text mb-4">邀请玩家</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium vintage-text mb-2">房间ID</label>
+                    <div class="flex">
+                        <input type="text" id="roomIdDisplay" class="vintage-input flex-1 px-3 py-2 rounded-l-md" readonly>
+                        <button class="vintage-button px-4 py-2 rounded-r-md" onclick="copyRoomId()">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium vintage-text mb-2">房间密码</label>
+                    <div class="flex">
+                        <input type="text" id="roomPasswordDisplay" class="vintage-input flex-1 px-3 py-2 rounded-l-md" readonly>
+                        <button class="vintage-button px-4 py-2 rounded-r-md" onclick="copyRoomPassword()">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-gray-600 mb-4">将房间ID和密码分享给其他玩家</p>
+                    <div class="mb-4">
+                        <select id="aiCharacterSelect" class="vintage-input w-full px-3 py-2 rounded-md mb-2">
+                            <option value="">选择AI代理角色</option>
+                            <option value="1">骑士</option>
+                            <option value="2">法师</option>
+                            <option value="3">盗贼</option>
+                        </select>
+                        <button class="vintage-button px-6 py-2 rounded-md bg-green-800 hover:bg-green-900 w-full" onclick="addAIAgent()">
+                            <i class="fas fa-robot mr-2"></i>添加AI代理
+                        </button>
+                    </div>
+                    <button class="vintage-button px-6 py-2 rounded-md" onclick="closeInviteModal()">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 从localStorage获取房间信息
+        const currentRoom = JSON.parse(localStorage.getItem('currentRoom')) || {
+            id: 'ROOM-12345',
+            name: '未命名房间',
+            maxPlayers: 4,
+            password: '',
+            status: 'waiting',
+            world: null,
+            players: []
+        };
+
+        // 更新最大玩家数
+        function updateMaxPlayers(maxPlayers) {
+            currentRoom.maxPlayers = parseInt(maxPlayers);
+            localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+            createPlayerSlots(maxPlayers);
+            updatePlayerCount();
+            addSystemMessage(`最大玩家数已更新为：${maxPlayers}人（不包含GM）`);
+        }
+
+        // 创建玩家槽位
+        function createPlayerSlots(maxPlayers = 4) {
+            const playerList = document.getElementById('playerList');
+            playerList.innerHTML = '';
+
+            // 添加房主槽位（GM）
+            const hostSlot = document.createElement('div');
+            hostSlot.className = 'player-slot parchment rounded-lg p-4 text-center';
+            hostSlot.innerHTML = `
+                <div class="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden border-2 border-8b7355">
+                    <img src="avatar/GM.jpg" alt="GM头像" class="w-full h-full object-cover">
+                </div>
+                <p class="font-medium vintage-text">GM</p>
+                <p class="text-sm text-gray-600">游戏主持人</p>
+            `;
+            playerList.appendChild(hostSlot);
+
+            // 显示已加入的玩家
+            if (currentRoom.players && currentRoom.players.length > 0) {
+                currentRoom.players.forEach(player => {
+                    const playerSlot = document.createElement('div');
+                    playerSlot.className = 'player-slot parchment rounded-lg p-4 text-center';
+                    playerSlot.innerHTML = `
+                        <div class="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden border-2 border-8b7355">
+                            <img src="${player.avatar}" alt="${player.name}" class="w-full h-full object-cover">
+                        </div>
+                        <p class="font-medium vintage-text">${player.name}</p>
+                        <p class="text-sm text-gray-600">${player.isAI ? 'AI代理' : '玩家'}</p>
+                    `;
+                    playerList.appendChild(playerSlot);
+                });
+            }
+
+            // 添加剩余的空位（不包含GM）
+            const remainingSlots = maxPlayers - (currentRoom.players ? currentRoom.players.length : 0);
+            for (let i = 0; i < remainingSlots; i++) {
+                const playerSlot = document.createElement('div');
+                playerSlot.className = 'player-slot empty parchment rounded-lg p-4 text-center';
+                playerSlot.innerHTML = `
+                    <div class="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden border-2 border-dashed border-8b7355 flex items-center justify-center">
+                        <i class="fas fa-user-plus text-2xl text-8b7355"></i>
+                    </div>
+                    <p class="font-medium vintage-text">等待加入</p>
+                    <p class="text-sm text-gray-600">空位</p>
+                `;
+                playerSlot.onclick = () => showInviteModal();
+                playerList.appendChild(playerSlot);
+            }
+
+            // 更新玩家数量显示
+            updatePlayerCount();
+        }
+
+        // 初始化房间玩家数据
+        function initializeRoomPlayers() {
+            if (!currentRoom) {
+                addSystemMessage('错误：未找到房间信息');
+                return;
+            }
+
+            // 确保房间有玩家数据
+            if (!currentRoom.players) {
+                // 创建初始玩家数据
+                currentRoom.players = [];
+
+                // 更新当前房间数据
+                localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+            }
+        }
+
+        // 更新玩家列表
+        function updatePlayerList() {
+            // 从localStorage重新获取房间信息
+            const updatedRoom = JSON.parse(localStorage.getItem('currentRoom'));
+            if (updatedRoom) {
+                currentRoom.players = updatedRoom.players;
+                createPlayerSlots(currentRoom.maxPlayers);
+                addSystemMessage(`玩家列表已更新，当前玩家数：${currentRoom.players.length}`);
+            }
+        }
+
+        // 定期检查玩家列表更新
+        setInterval(updatePlayerList, 5000); // 每5秒更新一次
+
+        // 显示邀请弹窗
+        function showInviteModal() {
+            const modal = document.getElementById('inviteModal');
+            document.getElementById('roomIdDisplay').value = currentRoom.id;
+            document.getElementById('roomPasswordDisplay').value = currentRoom.password || '无密码';
+            modal.style.display = 'block';
+        }
+
+        // 关闭邀请弹窗
+        function closeInviteModal() {
+            const modal = document.getElementById('inviteModal');
+            modal.style.display = 'none';
+        }
+
+        // 复制房间ID
+        function copyRoomId() {
+            const roomId = document.getElementById('roomIdDisplay').value;
+            navigator.clipboard.writeText(roomId).then(() => {
+                alert('房间ID已复制到剪贴板');
+            });
+        }
+
+        // 复制房间密码
+        function copyRoomPassword() {
+            const password = document.getElementById('roomPasswordDisplay').value;
+            navigator.clipboard.writeText(password).then(() => {
+                alert('房间密码已复制到剪贴板');
+            });
+        }
+
+        // 点击弹窗外部关闭弹窗
+        window.onclick = function(event) {
+            const modal = document.getElementById('inviteModal');
+            if (event.target == modal) {
+                closeInviteModal();
+            }
+        }
+
+        // 游戏日志数据
+        const gameLog = [
+            {
+                type: 'system',
+                content: '游戏初始化完成',
+                timestamp: new Date().toISOString()
+            },
+            {
+                type: 'system',
+                content: '世界观加载成功：' + (JSON.parse(localStorage.getItem('selectedWorld'))?.name || '未知世界'),
+                timestamp: new Date().toISOString()
+            },
+            {
+                type: 'system',
+                content: '房间创建成功，等待玩家加入...',
+                timestamp: new Date().toISOString()
+            }
+        ];
+
+        // 更新游戏日志
+        function updateGameLog() {
+            const logContainer = document.getElementById('gameLog');
+            const logHTML = gameLog.map(log => {
+                let prefix = '';
+                switch(log.type) {
+                    case 'system':
+                        prefix = '[系统]';
+                        break;
+                    case 'gm':
+                        prefix = '[GM]';
+                        break;
+                    case 'player':
+                        prefix = `[${log.playerName}]`;
+                        break;
+                }
+                return `<p class="text-sm text-4a3728">${prefix} ${log.content}</p>`;
+            }).join('');
+            logContainer.innerHTML = logHTML;
+            // 滚动到底部
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                const newMessage = {
+                    type: 'gm',
+                    content: message,
+                    timestamp: new Date().toISOString()
+                };
+                
+                gameLog.push(newMessage);
+                updateGameLog();
+                
+                // 清空输入框
+                messageInput.value = '';
+            }
+        }
+
+        // 添加系统消息
+        function addSystemMessage(content) {
+            const newMessage = {
+                type: 'system',
+                content: content,
+                timestamp: new Date().toISOString()
+            };
+            gameLog.push(newMessage);
+            updateGameLog();
+        }
+
+        // 添加玩家消息
+        function addPlayerMessage(playerName, content) {
+            const newMessage = {
+                type: 'player',
+                playerName: playerName,
+                content: content,
+                timestamp: new Date().toISOString()
+            };
+            gameLog.push(newMessage);
+            updateGameLog();
+        }
+
+        // 更新房间信息显示
+        function updateRoomInfo() {
+            // 更新房间ID
+            document.getElementById('roomIdInput').value = currentRoom.id;
+            
+            // 更新房间名称
+            document.getElementById('roomNameInput').value = currentRoom.name;
+            
+            // 更新房间状态
+            document.getElementById('roomStatusSelect').value = currentRoom.status;
+            
+            // 更新世界观名称
+            const worldName = currentRoom.world ? currentRoom.world.name : '未选择';
+            document.getElementById('worldName').textContent = worldName;
+            
+            // 更新玩家数量
+            const playerCount = currentRoom.players ? currentRoom.players.length : 0;
+            document.getElementById('playerCount').textContent = `${playerCount}/${currentRoom.maxPlayers}`;
+        }
+
+        // 更新房间状态
+        function updateRoomStatus(newStatus) {
+            currentRoom.status = newStatus;
+            localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+            
+            // 添加系统消息
+            addSystemMessage(`房间状态已更新为：${getStatusText(newStatus)}`);
+        }
+
+        // 获取状态文本
+        function getStatusText(status) {
+            switch(status) {
+                case 'waiting':
+                    return '等待中';
+                case 'playing':
+                    return '进行中';
+                case 'paused':
+                    return '暂停';
+                default:
+                    return status;
+            }
+        }
+
+        // 更新玩家数量
+        function updatePlayerCount() {
+            const playerCount = currentRoom.players ? currentRoom.players.length : 0;
+            document.getElementById('playerCount').textContent = `${playerCount}/${currentRoom.maxPlayers}`;
+        }
+
+        // 退出游戏
+        function exitGame() {
+            if (confirm('确定要结束游戏吗？这将清除所有游戏数据并返回启动页面。')) {
+                // 清除所有相关数据
+                localStorage.removeItem('currentRoom');
+                localStorage.removeItem('selectedWorld');
+                localStorage.removeItem('selectedCharacter');
+                localStorage.removeItem('gameMode');
+                
+                // 添加退出消息
+                addSystemMessage('游戏已结束，正在返回启动页面...');
+                
+                // 延迟跳转，让用户看到退出消息
+                setTimeout(() => {
+                    window.location.href = 'launch.html';
+                }, 1000);
+            }
+        }
+
+        // 发送Prompt
+        function sendPrompt() {
+            const promptInput = document.getElementById('promptInput');
+            const prompt = promptInput.value.trim();
+            
+            if (prompt) {
+                // TODO: 这里添加与ModelAPI的对接
+                // const response = await modelAPI.sendPrompt(prompt);
+                
+                // 添加系统消息
+                addSystemMessage(`[GM] 已发送Prompt: ${prompt}`);
+                
+                // 清空输入框
+                promptInput.value = '';
+            }
+        }
+
+        // 切换分支
+        function switchBranch(branch) {
+            // TODO: 这里添加分支切换的逻辑
+            addSystemMessage(`[GM] 已切换到分支${branch}`);
+        }
+
+        // 更新难度系数
+        function updateDifficulty(value) {
+            // TODO: 这里添加难度系数更新的逻辑
+            addSystemMessage(`[GM] 难度系数已更新为：${value}`);
+        }
+
+        // 更新剧情复杂度
+        function updateComplexity(value) {
+            // TODO: 这里添加剧情复杂度更新的逻辑
+            addSystemMessage(`[GM] 剧情复杂度已更新为：${value}`);
+        }
+
+        // 保存设置
+        function saveSettings() {
+            // 收集需要保存的数据
+            const saveData = {
+                room: {
+                    id: currentRoom.id,
+                    name: currentRoom.name,
+                    maxPlayers: currentRoom.maxPlayers,
+                    status: currentRoom.status,
+                    world: currentRoom.world,
+                    gameMode: currentRoom.gameMode,
+                    players: currentRoom.players
+                },
+                settings: {
+                    difficulty: document.getElementById('difficultySlider').value,
+                    complexity: document.getElementById('complexitySlider').value,
+                    currentBranch: currentRoom.currentBranch || 'A'
+                },
+                gameLog: gameLog
+            };
+
+            // 创建Blob对象
+            const blob = new Blob([JSON.stringify(saveData, null, 2)], { type: 'application/json' });
+            
+            // 创建下载链接
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `game_session_${currentRoom.id}_${new Date().toISOString().slice(0,10)}.json`;
+            
+            // 触发下载
+            document.body.appendChild(a);
+            a.click();
+            
+            // 清理
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            // 添加系统消息
+            addSystemMessage('[系统] 游戏设置已保存');
+
+            // 延迟跳转到launch页面
+            setTimeout(() => {
+                window.location.href = 'launch.html';
+            }, 1000);
+        }
+
+        // 添加AI代理
+        function addAIAgent() {
+            if (!currentRoom) {
+                addSystemMessage('错误：未找到房间信息');
+                return;
+            }
+
+            const characterSelect = document.getElementById('aiCharacterSelect');
+            const selectedCharacterId = characterSelect.value;
+            
+            if (!selectedCharacterId) {
+                addSystemMessage('请先选择角色');
+                return;
+            }
+
+            // 角色数据
+            const charactersData = {
+                '1': {
+                    id: 1,
+                    name: "骑士",
+                    description: "勇敢的骑士，擅长近战和防御，是团队中的坚实后盾。",
+                    stats: {
+                        strength: 8,
+                        agility: 5,
+                        intelligence: 4,
+                        charisma: 6
+                    },
+                    skills: ["剑术", "防御", "领导力"]
+                },
+                '2': {
+                    id: 2,
+                    name: "法师",
+                    description: "神秘的法师，掌握强大的魔法，但身体较为脆弱。",
+                    stats: {
+                        strength: 3,
+                        agility: 4,
+                        intelligence: 9,
+                        charisma: 7
+                    },
+                    skills: ["魔法", "炼金术", "占卜"]
+                },
+                '3': {
+                    id: 3,
+                    name: "盗贼",
+                    description: "敏捷的盗贼，擅长潜行和偷袭，是团队中的侦察兵。",
+                    stats: {
+                        strength: 5,
+                        agility: 9,
+                        intelligence: 6,
+                        charisma: 5
+                    },
+                    skills: ["潜行", "开锁", "偷窃"]
+                }
+            };
+
+            const character = charactersData[selectedCharacterId];
+
+            // 创建AI代理玩家数据
+            const aiAgent = {
+                id: 'robot_' + currentRoom.id,
+                name: character.name + ' (AI)',
+                avatar: `avatar/${character.id}.jpg`,
+                description: character.description,
+                stats: character.stats,
+                skills: character.skills,
+                tags: [...character.skills, 'AI', '智能'],
+                isAI: true,
+                characterId: character.id
+            };
+
+            // 检查是否已经存在AI代理
+            const existingAI = currentRoom.players.find(p => p.id === aiAgent.id);
+            if (existingAI) {
+                addSystemMessage('AI代理已经存在于房间中');
+                return;
+            }
+
+            // 检查房间是否已满
+            if (currentRoom.players.length >= currentRoom.maxPlayers) {
+                addSystemMessage('房间已满，无法添加更多玩家');
+                return;
+            }
+
+            // 添加AI代理到房间
+            currentRoom.players.push(aiAgent);
+            localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+
+            // 更新界面
+            createPlayerSlots(currentRoom.maxPlayers);
+            updatePlayerCount();
+            addSystemMessage(`已添加AI代理 ${aiAgent.name} 到房间`);
+
+            // 重置选择框
+            characterSelect.value = '';
+            
+            // 关闭邀请弹窗
+            closeInviteModal();
+        }
+
+        // 页面加载时初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // 从localStorage获取房间信息
+                const roomData = JSON.parse(localStorage.getItem('currentRoom'));
+                if (roomData) {
+                    // 更新当前房间数据
+                    Object.assign(currentRoom, roomData);
+                    
+                    // 设置最大玩家数选择框的值
+                    const maxPlayersSelect = document.querySelector('select[onchange="updateMaxPlayers(this.value)"]');
+                    if (maxPlayersSelect) {
+                        maxPlayersSelect.value = currentRoom.maxPlayers;
+                    }
+                }
+
+                createPlayerSlots(currentRoom.maxPlayers);
+                updateGameLog();
+                updateRoomInfo();
+
+                // 添加发送按钮点击事件
+                const sendButton = document.getElementById('sendButton');
+                const messageInput = document.getElementById('messageInput');
+                
+                sendButton.addEventListener('click', sendMessage);
+                
+                // 添加回车发送功能
+                messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+
+                // 添加Prompt发送按钮点击事件
+                const sendPromptButton = document.getElementById('sendPromptButton');
+                const promptInput = document.getElementById('promptInput');
+                
+                sendPromptButton.addEventListener('click', sendPrompt);
+                
+                // 添加回车发送功能
+                promptInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendPrompt();
+                    }
+                });
+            });
+        } else {
+            // 从localStorage获取房间信息
+            const roomData = JSON.parse(localStorage.getItem('currentRoom'));
+            if (roomData) {
+                // 更新当前房间数据
+                Object.assign(currentRoom, roomData);
+                
+                // 设置最大玩家数选择框的值
+                const maxPlayersSelect = document.querySelector('select[onchange="updateMaxPlayers(this.value)"]');
+                if (maxPlayersSelect) {
+                    maxPlayersSelect.value = currentRoom.maxPlayers;
+                }
+            }
+
+            createPlayerSlots(currentRoom.maxPlayers);
+            updateGameLog();
+            updateRoomInfo();
+
+            // 添加发送按钮点击事件
+            const sendButton = document.getElementById('sendButton');
+            const messageInput = document.getElementById('messageInput');
+            
+            sendButton.addEventListener('click', sendMessage);
+            
+            // 添加回车发送功能
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // 添加Prompt发送按钮点击事件
+            const sendPromptButton = document.getElementById('sendPromptButton');
+            const promptInput = document.getElementById('promptInput');
+            
+            sendPromptButton.addEventListener('click', sendPrompt);
+            
+            // 添加回车发送功能
+            promptInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendPrompt();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

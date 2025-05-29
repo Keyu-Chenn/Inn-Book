@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选择世界观</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://www.transparenttextures.com/patterns/old-map.png');
+            background-color: #f4e4bc;
+        }
+        .parchment {
+            background-color: #f9f3e6;
+            background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+            border: 1px solid #d4c4a8;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .vintage-text {
+            color: #4a3728;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .vintage-button {
+            background-color: #8b7355;
+            color: #f9f3e6;
+            border: 1px solid #6b4f3f;
+            transition: all 0.3s ease;
+        }
+        .vintage-button:hover {
+            background-color: #6b4f3f;
+            transform: translateY(-1px);
+        }
+        .vintage-input {
+            background-color: #fff9f0;
+            border: 1px solid #d4c4a8;
+            color: #4a3728;
+        }
+        .vintage-input:focus {
+            border-color: #8b7355;
+            box-shadow: 0 0 0 2px rgba(139, 115, 85, 0.2);
+        }
+        .step-indicator {
+            position: relative;
+        }
+        .step-indicator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #d4c4a8;
+            z-index: 0;
+        }
+        .step {
+            position: relative;
+            z-index: 1;
+            background-color: #f4e4bc;
+        }
+        .step.active {
+            background-color: #8b7355;
+            color: #f9f3e6;
+        }
+        .step.completed {
+            background-color: #6b4f3f;
+            color: #f9f3e6;
+        }
+        .world-card {
+            transition: all 0.3s ease;
+        }
+        .world-card:hover {
+            transform: translateY(-5px);
+        }
+        .world-card.selected {
+            border: 2px solid #8b7355;
+            box-shadow: 0 0 10px rgba(139, 115, 85, 0.3);
+        }
+        .aspect-w-16 {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 宽高比 */
+        }
+        .aspect-w-16 img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen">
+        <!-- 顶部导航栏 -->
+        <nav class="parchment shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold vintage-text">选择世界观</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="vintage-button px-4 py-2 rounded-md" onclick="window.location.href='launch.html'">
+                            <i class="fas fa-arrow-left mr-2"></i>返回
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 步骤指示器 -->
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="step-indicator flex justify-between mb-8">
+                <div class="step completed flex items-center justify-center w-12 h-12 rounded-full border-2 border-8b7355">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="step active flex items-center justify-center w-12 h-12 rounded-full border-2 border-8b7355">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div class="step flex items-center justify-center w-12 h-12 rounded-full border-2 border-8b7355">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="flex justify-between px-12 mb-8">
+                <div class="text-center">
+                    <p class="vintage-text font-medium">游戏模式</p>
+                    <p class="text-sm text-gray-600">已完成</p>
+                </div>
+                <div class="text-center">
+                    <p class="vintage-text font-medium">世界观</p>
+                    <p class="text-sm text-gray-600">进行中</p>
+                </div>
+                <div class="text-center">
+                    <p class="vintage-text font-medium">人物</p>
+                    <p class="text-sm text-gray-600">待完成</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要内容区 -->
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="parchment rounded-lg p-6">
+                <h2 class="text-xl font-bold vintage-text mb-4">选择世界观</h2>
+                <div class="grid grid-cols-3 gap-6" id="worldGrid">
+                    <!-- 世界观卡片将通过 JavaScript 动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 导航按钮 -->
+        <div class="max-w-7xl mx-auto px-4 py-6 flex justify-end">
+            <button class="vintage-button px-6 py-2 rounded-md" onclick="nextStep()">
+                下一步<i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 世界观数据示例
+        const worldsData = [
+            {
+                id: 1,
+                name: "中世纪奇幻世界",
+                image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                tags: ["奇幻", "中世纪", "魔法"],
+                description: "一个充满魔法与骑士的中世纪奇幻世界，在这里你可以成为勇敢的骑士、神秘的法师或狡猾的盗贼...",
+                isTemplate: false
+            },
+            {
+                id: 2,
+                name: "赛博朋克世界",
+                image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                tags: ["科幻", "未来", "高科技"],
+                description: "霓虹闪烁的未来都市，在这里你可以成为黑客、佣兵或企业特工，探索科技与人性的边界...",
+                isTemplate: false
+            },
+            {
+                id: 3,
+                name: "东方武侠世界",
+                image: "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                tags: ["武侠", "江湖", "功夫"],
+                description: "一个充满侠义与江湖的世界，在这里你可以成为武林高手、江湖侠客或隐世高人...",
+                isTemplate: false
+            }
+        ];
+
+        // 创建世界观卡片
+        function createWorldCard(world) {
+            const card = document.createElement('div');
+            card.className = 'world-card parchment rounded-lg p-4';
+            card.dataset.worldId = world.id;
+
+            card.innerHTML = `
+                <div class="aspect-w-16 mb-4 rounded-lg overflow-hidden">
+                    <img src="${world.image}" alt="${world.name}" class="w-full h-full object-cover">
+                </div>
+                <h3 class="text-lg font-bold vintage-text mb-2">${world.name}</h3>
+                <div class="flex flex-wrap gap-2 mb-3">
+                    ${world.tags.map(tag => `
+                        <span class="px-2 py-1 bg-8b7355 text-f9f3e6 rounded-full text-xs">${tag}</span>
+                    `).join('')}
+                </div>
+                <p class="text-sm text-gray-600 mb-4">${world.description}</p>
+                <button class="vintage-button w-full py-2 rounded-md" onclick="selectWorld(${world.id})">
+                    选择
+                </button>
+            `;
+
+            return card;
+        }
+
+        // 创建新世界观卡片
+        function createNewWorldCard() {
+            const card = document.createElement('div');
+            card.className = 'world-card parchment rounded-lg p-4 border-2 border-dashed border-8b7355';
+            
+            card.innerHTML = `
+                <div class="aspect-w-16 mb-4 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                    <i class="fas fa-plus text-4xl text-8b7355"></i>
+                </div>
+                <h3 class="text-lg font-bold vintage-text mb-2">创建新世界观</h3>
+                <p class="text-sm text-gray-600 mb-4">创建一个全新的世界观，打造属于你的独特故事...</p>
+                <button class="vintage-button w-full py-2 rounded-md" onclick="createNewWorld()">
+                    开始创建
+                </button>
+            `;
+
+            return card;
+        }
+
+        // 渲染世界观卡片
+        function renderWorldCards() {
+            const worldGrid = document.getElementById('worldGrid');
+            if (!worldGrid) {
+                console.error('找不到 worldGrid 元素');
+                return;
+            }
+            worldGrid.innerHTML = ''; // 清空现有内容
+
+            // 渲染现有世界观
+            worldsData.forEach(world => {
+                const worldCard = createWorldCard(world);
+                worldGrid.appendChild(worldCard);
+            });
+
+            // 添加创建新世界观的卡片
+            const newWorldCard = createNewWorldCard();
+            worldGrid.appendChild(newWorldCard);
+        }
+
+        // 选择世界观
+        function selectWorld(worldId) {
+            const selectedWorld = worldsData.find(world => world.id === worldId);
+            if (selectedWorld) {
+                // 移除其他卡片的选中状态
+                document.querySelectorAll('.world-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // 添加选中状态
+                const selectedCard = document.querySelector(`[data-world-id="${worldId}"]`);
+                if (selectedCard) {
+                    selectedCard.classList.add('selected');
+                }
+
+                // 存储选中的世界观
+                localStorage.setItem('selectedWorld', JSON.stringify(selectedWorld));
+            }
+        }
+
+        // 创建新世界观
+        function createNewWorld() {
+            // 这里可以跳转到创建世界观页面或打开创建对话框
+            console.log('创建新世界观');
+            // window.location.href = 'create-world.html';
+        }
+
+        // 下一步
+        function nextStep() {
+            const selectedWorld = worldsData.find(world => 
+                document.querySelector(`[data-world-id="${world.id}"]`)?.classList.contains('selected')
+            );
+
+            if (!selectedWorld) {
+                alert('请先选择世界观');
+                return;
+            }
+
+            // 获取URL参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+
+            if (mode === 'create') {
+                // 创建房间模式：跳转到创建房间页面
+                window.location.href = 'createRoom.html';
+            } else {
+                // 单人模式：跳转到角色选择页面
+                window.location.href = 'character-selection.html';
+            }
+        }
+
+        // 页面加载时初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderWorldCards);
+        } else {
+            renderWorldCards();
+        }
+    </script>
+</body>
+</html> 

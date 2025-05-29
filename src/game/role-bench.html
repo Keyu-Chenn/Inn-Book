@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玩家房间</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://www.transparenttextures.com/patterns/old-map.png');
+            background-color: #f4e4bc;
+        }
+        .parchment {
+            background-color: #f9f3e6;
+            background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+            border: 1px solid #d4c4a8;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .vintage-text {
+            color: #4a3728;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .vintage-button {
+            background-color: #8b7355;
+            color: #f9f3e6;
+            border: 1px solid #6b4f3f;
+            transition: all 0.3s ease;
+        }
+        .vintage-button:hover {
+            background-color: #6b4f3f;
+            transform: translateY(-1px);
+        }
+        .vintage-input {
+            background-color: #fff9f0;
+            border: 1px solid #d4c4a8;
+            color: #4a3728;
+        }
+        .vintage-input:focus {
+            border-color: #8b7355;
+            box-shadow: 0 0 0 2px rgba(139, 115, 85, 0.2);
+        }
+        .scroll-container {
+            scrollbar-width: thin;
+            scrollbar-color: #8b7355 #f9f3e6;
+        }
+        .scroll-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scroll-container::-webkit-scrollbar-track {
+            background: #f9f3e6;
+        }
+        .scroll-container::-webkit-scrollbar-thumb {
+            background-color: #8b7355;
+            border-radius: 4px;
+        }
+        .map-container {
+            background-image: url('https://www.transparenttextures.com/patterns/old-map.png');
+            background-size: cover;
+            position: relative;
+        }
+        .player-marker {
+            width: 32px;
+            height: 32px;
+            background-color: #8b7355;
+            border: 2px solid #4a3728;
+            border-radius: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .player-marker:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 0 10px rgba(139, 115, 85, 0.5);
+        }
+        .player-marker img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .player-info-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .player-info-content {
+            position: relative;
+            background-color: #f9f3e6;
+            margin: 15% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #8b7355;
+        }
+        .close-modal:hover {
+            color: #6b4f3f;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen">
+        <!-- 顶部导航栏 -->
+        <nav class="parchment shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold vintage-text">玩家房间</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="vintage-button px-4 py-2 rounded-md">
+                            <i class="fas fa-book mr-2"></i>查看剧本
+                        </button>
+                        <button class="vintage-button px-4 py-2 rounded-md bg-red-800 hover:bg-red-900">
+                            <i class="fas fa-sign-out-alt mr-2"></i>退出房间
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主要内容区 -->
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <!-- 角色轮换显示 -->
+            <div class="parchment rounded-lg p-4 mb-6">
+                <h2 class="text-xl font-semibold mb-4 vintage-text">当前行动顺序</h2>
+                <div class="flex space-x-4 overflow-x-auto pb-2" id="turnOrder">
+                    <!-- 角色头像将通过 JavaScript 动态生成 -->
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-6">
+                <!-- 左侧面板：角色信息 -->
+                <div class="col-span-3">
+                    <div class="parchment rounded-lg p-4">
+                        <h2 class="text-xl font-semibold mb-4 vintage-text">角色信息</h2>
+                        <div class="space-y-4">
+                            <div class="text-center">
+                                <div class="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-4 border-d4c4a8">
+                                    <img id="characterAvatar" src="" alt="角色头像" class="w-full h-full object-cover">
+                                </div>
+                                <h3 id="characterName" class="text-lg font-medium vintage-text"></h3>
+                                <p id="characterProfession" class="text-sm text-gray-600"></p>
+                            </div>
+                            <div class="border-t border-d4c4a8 pt-4">
+                                <h4 class="font-medium vintage-text mb-2">角色属性</h4>
+                                <div class="space-y-2" id="characterStats">
+                                    <!-- 属性将通过 JavaScript 动态添加 -->
+                                </div>
+                            </div>
+                            <div class="border-t border-d4c4a8 pt-4">
+                                <h4 class="font-medium vintage-text mb-2">角色技能</h4>
+                                <div class="flex flex-wrap gap-2" id="characterSkills">
+                                    <!-- 技能将通过 JavaScript 动态添加 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 中间面板：地图和行动 -->
+                <div class="col-span-6">
+                    <div class="parchment rounded-lg p-4">
+                        <h2 class="text-xl font-semibold mb-4 vintage-text">场景地图</h2>
+                        <div class="map-container rounded-lg h-96 relative">
+                            <!-- 这里可以放置实际的地图图片 -->
+                            <div class="player-marker" style="top: 30%; left: 40%;" onclick="showPlayerInfo('player1')">
+                                <img src="avatar/1.jpg" alt="玩家1">
+                            </div>
+                            <div class="player-marker" style="top: 50%; left: 60%;" onclick="showPlayerInfo('player2')">
+                                <img src="avatar/2.jpg" alt="玩家2">
+                            </div>
+                            <div class="player-marker" style="top: 70%; left: 45%;" onclick="showPlayerInfo('player3')">
+                                <img src="avatar/3.jpg" alt="玩家3">
+                            </div>
+                        </div>
+                        <div class="mt-4 grid grid-cols-2 gap-4">
+                            <div>
+                                <h3 class="font-medium vintage-text mb-2">可用行动</h3>
+                                <div class="space-y-2">
+                                    <button class="vintage-button w-full p-2 rounded-md" onclick="investigate()">
+                                        <i class="fas fa-search mr-2"></i>调查
+                                    </button>
+                                    <button class="vintage-button w-full p-2 rounded-md" onclick="startDialogue()">
+                                        <i class="fas fa-comments mr-2"></i>对话
+                                    </button>
+                                    <button class="vintage-button w-full p-2 rounded-md" onclick="interact()">
+                                        <i class="fas fa-hand-paper mr-2"></i>互动
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="font-medium vintage-text mb-2">当前位置</h3>
+                                <div class="vintage-input p-3 rounded-md">
+                                    <p class="text-sm">大厅</p>
+                                    <p class="text-xs text-gray-600 mt-1">一个宽敞的大厅，装饰着古老的油画和雕塑。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧面板：对话和历史 -->
+                <div class="col-span-3">
+                    <div class="parchment rounded-lg p-4">
+                        <h2 class="text-xl font-semibold mb-4 vintage-text">对话与历史</h2>
+                        <div class="space-y-4">
+                            <div class="h-64 bg-fff9f0 rounded-md p-3 overflow-y-auto scroll-container">
+                                <div class="space-y-2">
+                                    <p class="text-sm text-4a3728">[系统] 你来到了一个神秘的大厅</p>
+                                    <p class="text-sm text-4a3728">[GM] 这里似乎隐藏着一些线索</p>
+                                    <p class="text-sm text-4a3728">[玩家2] 我注意到墙上有一幅奇怪的画</p>
+                                </div>
+                            </div>
+                            <div>
+                                <textarea id="messageInput" class="vintage-input w-full rounded-md p-2" rows="3" placeholder="输入你的行动或对话..."></textarea>
+                                <button id="sendButton" class="vintage-button w-full mt-2 p-2 rounded-md">
+                                    <i class="fas fa-paper-plane mr-2"></i>发送
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部面板：物品栏 -->
+            <div class="mt-6">
+                <div class="parchment rounded-lg p-4">
+                    <h2 class="text-xl font-semibold mb-4 vintage-text">物品栏</h2>
+                    <div class="grid grid-cols-6 gap-4" id="inventoryGrid">
+                        <!-- 物品槽位将通过 JavaScript 动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 玩家信息弹窗 -->
+    <div id="playerInfoModal" class="player-info-modal">
+        <div class="player-info-content parchment">
+            <span class="close-modal" onclick="closePlayerInfo()">&times;</span>
+            <div class="flex flex-col h-full">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-8b7355">
+                        <img id="modalPlayerAvatar" src="" alt="玩家头像" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <h3 id="modalPlayerName" class="text-xl font-bold vintage-text"></h3>
+                        <p id="modalPlayerProfession" class="text-sm text-gray-600"></p>
+                    </div>
+                </div>
+                <div class="border-t border-d4c4a8 pt-4 mb-4">
+                    <h4 class="font-medium vintage-text mb-2">角色属性</h4>
+                    <div class="space-y-2" id="modalPlayerStats">
+                        <!-- 属性将通过 JavaScript 动态添加 -->
+                    </div>
+                </div>
+                <div class="border-t border-d4c4a8 pt-4 mb-4">
+                    <h4 class="font-medium vintage-text mb-2">角色技能</h4>
+                    <div class="flex flex-wrap gap-2" id="modalPlayerSkills">
+                        <!-- 技能将通过 JavaScript 动态添加 -->
+                    </div>
+                </div>
+                <div class="border-t border-d4c4a8 pt-4">
+                    <h4 class="font-medium vintage-text mb-2">角色标签</h4>
+                    <div class="flex flex-wrap gap-2" id="modalPlayerTags">
+                        <!-- 标签将通过 JavaScript 动态添加 -->
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h4 class="font-medium vintage-text mb-2">当前位置</h4>
+                    <p id="modalPlayerLocation" class="text-sm text-gray-600"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 物品信息弹窗 -->
+    <div id="itemInfoModal" class="player-info-modal">
+        <div class="player-info-content parchment">
+            <span class="close-modal" onclick="closeItemInfo()">&times;</span>
+            <div class="text-center mb-4">
+                <div class="w-24 h-24 mx-auto mb-2 rounded-full overflow-hidden border-2 border-8b7355 flex items-center justify-center">
+                    <i id="modalItemIcon" class="text-4xl text-8b7355"></i>
+                </div>
+                <h3 id="modalItemName" class="text-xl font-bold vintage-text"></h3>
+                <p id="modalItemType" class="text-sm text-gray-600"></p>
+            </div>
+            <div class="border-t border-d4c4a8 pt-4">
+                <h4 class="font-medium vintage-text mb-2">物品描述</h4>
+                <p id="modalItemDescription" class="text-sm text-gray-600 mb-4"></p>
+                <div class="flex flex-wrap gap-2" id="modalItemTags">
+                    <!-- 标签将通过 JavaScript 动态添加 -->
+                </div>
+            </div>
+            <div class="mt-4 space-y-2">
+                <button id="useItemButton" class="vintage-button w-full py-2 rounded-md">
+                    <i class="fas fa-hand-paper mr-2"></i>使用物品
+                </button>
+                <button id="examineItemButton" class="vintage-button w-full py-2 rounded-md">
+                    <i class="fas fa-search mr-2"></i>仔细检查
+                </button>
+                <button id="combineItemButton" class="vintage-button w-full py-2 rounded-md">
+                    <i class="fas fa-link mr-2"></i>组合物品
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 退出房间确认弹窗 -->
+    <div id="exitRoomModal" class="player-info-modal">
+        <div class="player-info-content parchment">
+            <span class="close-modal" onclick="closeExitModal()">&times;</span>
+            <div class="text-center mb-4">
+                <i class="fas fa-sign-out-alt text-4xl text-8b7355 mb-4"></i>
+                <h3 class="text-xl font-bold vintage-text mb-2">确认退出房间</h3>
+                <p class="text-sm text-gray-600">退出房间后，当前游戏进度将不会保存。</p>
+            </div>
+            <div class="mt-4 space-y-2">
+                <button class="vintage-button w-full py-2 rounded-md bg-red-800 hover:bg-red-900" onclick="exitRoom()">
+                    <i class="fas fa-sign-out-alt mr-2"></i>确认退出
+                </button>
+                <button class="vintage-button w-full py-2 rounded-md" onclick="closeExitModal()">
+                    <i class="fas fa-times mr-2"></i>取消
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 剧本查看弹窗 -->
+    <div id="scriptModal" class="player-info-modal">
+        <div class="player-info-content parchment" style="max-width: 800px; max-height: 80vh;">
+            <span class="close-modal" onclick="closeScriptModal()">&times;</span>
+            <div class="flex flex-col h-full">
+                <!-- 剧本标题和导航 -->
+                <div class="border-b border-d4c4a8 pb-4 mb-4">
+                    <h2 class="text-2xl font-bold vintage-text mb-2">剧本内容</h2>
+                    <div class="flex space-x-4">
+                        <button class="vintage-button px-4 py-2 rounded-md" onclick="showScriptSection('overview')">
+                            <i class="fas fa-book-open mr-2"></i>剧情概览
+                        </button>
+                        <button class="vintage-button px-4 py-2 rounded-md" onclick="showScriptSection('characters')">
+                            <i class="fas fa-users mr-2"></i>角色介绍
+                        </button>
+                        <button class="vintage-button px-4 py-2 rounded-md" onclick="showScriptSection('locations')">
+                            <i class="fas fa-map-marker-alt mr-2"></i>场景地图
+                        </button>
+                        <button class="vintage-button px-4 py-2 rounded-md" onclick="showScriptSection('items')">
+                            <i class="fas fa-box-open mr-2"></i>重要物品
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 剧本内容区域 -->
+                <div class="flex-1 overflow-y-auto scroll-container" id="scriptContent">
+                    <!-- 内容将通过 JavaScript 动态加载 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 从localStorage获取游戏模式
+        const gameMode = JSON.parse(localStorage.getItem('gameMode'));
+        let currentRoom = JSON.parse(localStorage.getItem('currentRoom'));
+
+        // 获取URL参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('roomId');
+        const mode = urlParams.get('mode');
+        console.log(roomId, mode);
+
+        // 如果是加入模式，确保房间信息存在
+        if (mode === 'join' && roomId) {
+            // 获取当前玩家信息
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            if (selectedCharacter) {
+                // 创建新的房间信息
+                currentRoom = {
+                    id: roomId,
+                    mode: 'join',
+                    players: [{
+                        id: selectedCharacter.id,
+                        name: selectedCharacter.name,
+                        avatar: `avatar/${selectedCharacter.id}.jpg`,
+                        description: selectedCharacter.description,
+                        stats: selectedCharacter.stats,
+                        skills: selectedCharacter.skills,
+                        tags: selectedCharacter.tags
+                    }]
+                };
+                localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+            }
+        }
+
+        // 对话历史数据
+        const chatHistory = [
+            {
+                type: 'system',
+                content: '游戏初始化完成',
+                timestamp: new Date().toISOString()
+            },
+            {
+                type: 'system',
+                content: '世界观加载成功：' + (JSON.parse(localStorage.getItem('selectedWorld'))?.name || '未知世界'),
+                timestamp: new Date().toISOString()
+            }
+        ];
+
+        // 如果是多人模式，添加欢迎消息
+        if (gameMode && gameMode.type !== 'single' && currentRoom) {
+            chatHistory.push({
+                type: 'system',
+                content: `欢迎加入房间：${currentRoom.id}`,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        chatHistory.push({
+            type: 'system',
+            content: '角色加载成功：' + (JSON.parse(localStorage.getItem('selectedCharacter'))?.name || '未知角色'),
+            timestamp: new Date().toISOString()
+        });
+
+        chatHistory.push({
+            type: 'system',
+            content: '欢迎来到游戏世界，开始你的冒险吧！',
+            timestamp: new Date().toISOString()
+        });
+
+        // 从localStorage获取角色数据
+        const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+        const selectedWorld = JSON.parse(localStorage.getItem('selectedWorld'));
+
+        // 物品数据示例
+        const inventoryItems = [
+            {
+                id: 1,
+                name: "钥匙",
+                icon: "fas fa-key",
+                type: "道具",
+                description: "一把古老的钥匙，看起来可以打开某个门。",
+                tags: ["钥匙", "道具", "可交互"],
+                canUse: true,
+                canExamine: true,
+                canCombine: true
+            },
+            {
+                id: 2,
+                name: "地图",
+                icon: "fas fa-map",
+                type: "道具",
+                description: "一张泛黄的地图，上面标记着一些重要的位置。",
+                tags: ["地图", "道具", "可阅读"],
+                canUse: true,
+                canExamine: true,
+                canCombine: false
+            },
+            {
+                id: 3,
+                name: "日记",
+                icon: "fas fa-book",
+                type: "道具",
+                description: "一本破旧的日记，记录着一些重要的信息。",
+                tags: ["日记", "道具", "可阅读"],
+                canUse: true,
+                canExamine: true,
+                canCombine: false
+            },
+            {
+                id: 4,
+                name: "药水",
+                icon: "fas fa-flask",
+                type: "消耗品",
+                description: "一瓶神秘的药水，散发着奇异的光芒。",
+                tags: ["药水", "消耗品", "可饮用"],
+                canUse: true,
+                canExamine: true,
+                canCombine: true
+            },
+            {
+                id: 5,
+                name: "宝石",
+                icon: "fas fa-gem",
+                type: "材料",
+                description: "一颗闪耀的宝石，似乎蕴含着某种力量。",
+                tags: ["宝石", "材料", "可组合"],
+                canUse: false,
+                canExamine: true,
+                canCombine: true
+            }
+        ];
+
+        // 创建物品槽位
+        function createInventorySlot(item = null) {
+            const slot = document.createElement('div');
+            slot.className = 'vintage-input p-3 rounded-md text-center cursor-pointer transition-all duration-300 hover:transform hover:scale-105';
+            
+            if (item) {
+                slot.innerHTML = `
+                    <i class="${item.icon} text-2xl mb-2"></i>
+                    <p class="text-sm">${item.name}</p>
+                `;
+                slot.onclick = () => showItemInfo(item);
+            } else {
+                slot.className += ' opacity-50';
+                slot.innerHTML = `
+                    <i class="fas fa-plus text-2xl mb-2"></i>
+                    <p class="text-sm">空位</p>
+                `;
+            }
+            
+            return slot;
+        }
+
+        // 更新物品栏
+        function updateInventory() {
+            const inventoryGrid = document.getElementById('inventoryGrid');
+            inventoryGrid.innerHTML = '';
+
+            // 添加物品槽位
+            inventoryItems.forEach(item => {
+                const slot = createInventorySlot(item);
+                inventoryGrid.appendChild(slot);
+            });
+
+            // 添加空位
+            for (let i = inventoryItems.length; i < 6; i++) {
+                const emptySlot = createInventorySlot();
+                inventoryGrid.appendChild(emptySlot);
+            }
+        }
+
+        // 显示物品信息
+        function showItemInfo(item) {
+            const modal = document.getElementById('itemInfoModal');
+            
+            // 更新模态框内容
+            document.getElementById('modalItemIcon').className = `${item.icon} text-4xl text-8b7355`;
+            document.getElementById('modalItemName').textContent = item.name;
+            document.getElementById('modalItemType').textContent = item.type;
+            document.getElementById('modalItemDescription').textContent = item.description;
+            
+            // 更新标签
+            const tagsContainer = document.getElementById('modalItemTags');
+            const tagsHTML = item.tags.map(tag => `
+                <span class="inline-block px-2 py-1 bg-8b7355 text-f9f3e6 rounded-full text-xs mr-2 mb-2">${tag}</span>
+            `).join('');
+            tagsContainer.innerHTML = tagsHTML;
+            
+            // 更新按钮状态
+            const useButton = document.getElementById('useItemButton');
+            const examineButton = document.getElementById('examineItemButton');
+            const combineButton = document.getElementById('combineItemButton');
+            
+            useButton.style.display = item.canUse ? 'block' : 'none';
+            examineButton.style.display = item.canExamine ? 'block' : 'none';
+            combineButton.style.display = item.canCombine ? 'block' : 'none';
+            
+            // 添加按钮事件
+            useButton.onclick = () => useItem(item);
+            examineButton.onclick = () => examineItem(item);
+            combineButton.onclick = () => combineItem(item);
+            
+            // 显示模态框
+            modal.style.display = 'block';
+        }
+
+        // 关闭物品信息
+        function closeItemInfo() {
+            const modal = document.getElementById('itemInfoModal');
+            modal.style.display = 'none';
+        }
+
+        // 使用物品
+        function useItem(item) {
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            addSystemMessage(`${selectedCharacter.name} 使用了 ${item.name}...`);
+            
+            // 模拟使用效果
+            const effects = {
+                '钥匙': '你尝试用钥匙打开门，但似乎不是这把钥匙。',
+                '地图': '你仔细查看地图，发现了一些新的线索。',
+                '日记': '你翻开日记，发现了一些重要的信息。',
+                '药水': '你喝下药水，感觉身体充满了力量。',
+                '宝石': '宝石发出微弱的光芒，但似乎需要其他物品才能发挥作用。'
+            };
+            
+            setTimeout(() => {
+                addSystemMessage(effects[item.name] || '物品使用效果未知。');
+            }, 1000);
+            
+            closeItemInfo();
+        }
+
+        // 检查物品
+        function examineItem(item) {
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            addSystemMessage(`${selectedCharacter.name} 仔细检查 ${item.name}...`);
+            
+            // 模拟检查结果
+            const details = {
+                '钥匙': '钥匙上刻着一些奇怪的符号，可能是某种密码。',
+                '地图': '地图背面有一些模糊的文字，需要特殊方法才能看清。',
+                '日记': '日记的最后一页被撕掉了，但留下了一些痕迹。',
+                '药水': '药水散发着奇异的光芒，似乎蕴含着强大的力量。',
+                '宝石': '宝石内部似乎有某种能量在流动，需要特定的方法才能激活。'
+            };
+            
+            setTimeout(() => {
+                addSystemMessage(details[item.name] || '没有发现更多信息。');
+            }, 1000);
+            
+            closeItemInfo();
+        }
+
+        // 组合物品
+        function combineItem(item) {
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            addSystemMessage(`${selectedCharacter.name} 尝试组合 ${item.name}...`);
+            
+            // 模拟组合结果
+            const combinations = {
+                '钥匙': '这把钥匙似乎需要和其他物品组合才能发挥作用。',
+                '药水': '药水可以和其他材料组合，但需要找到合适的配方。',
+                '宝石': '宝石可以镶嵌在特定的物品上，但需要找到合适的物品。'
+            };
+            
+            setTimeout(() => {
+                addSystemMessage(combinations[item.name] || '这个物品无法与其他物品组合。');
+            }, 1000);
+            
+            closeItemInfo();
+        }
+
+        // 更新角色信息
+        function updateCharacterInfo() {
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            if (selectedCharacter) {
+                // 更新头像
+                const avatarImg = document.getElementById('characterAvatar');
+                avatarImg.src = `avatar/${selectedCharacter.id}.jpg`;
+                avatarImg.alt = selectedCharacter.name;
+
+                // 更新角色名称
+                const characterName = document.getElementById('characterName');
+                characterName.textContent = selectedCharacter.name;
+
+                // 更新角色描述
+                const characterProfession = document.getElementById('characterProfession');
+                characterProfession.textContent = selectedCharacter.description;
+
+                // 更新角色属性
+                const statsContainer = document.getElementById('characterStats');
+                if (statsContainer && selectedCharacter.stats) {
+                    const statsHTML = `
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="vintage-text">力量</span>
+                                <span>${selectedCharacter.stats.strength}/10</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" style="width: ${selectedCharacter.stats.strength * 10}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="vintage-text">敏捷</span>
+                                <span>${selectedCharacter.stats.agility}/10</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" style="width: ${selectedCharacter.stats.agility * 10}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="vintage-text">智力</span>
+                                <span>${selectedCharacter.stats.intelligence}/10</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" style="width: ${selectedCharacter.stats.intelligence * 10}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="vintage-text">魅力</span>
+                                <span>${selectedCharacter.stats.charisma}/10</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" style="width: ${selectedCharacter.stats.charisma * 10}%"></div>
+                            </div>
+                        </div>
+                    `;
+                    statsContainer.innerHTML = statsHTML;
+                }
+
+                // 更新角色技能
+                const skillsContainer = document.getElementById('characterSkills');
+                if (skillsContainer && selectedCharacter.skills) {
+                    const skillsHTML = selectedCharacter.skills.map(skill => `
+                        <span class="px-2 py-1 bg-8b7355 text-f9f3e6 rounded-full text-xs">${skill}</span>
+                    `).join('');
+                    skillsContainer.innerHTML = skillsHTML;
+                }
+
+                // 更新标签
+                const tagsContainer = document.getElementById('characterTags');
+                if (tagsContainer && selectedCharacter.tags) {
+                    const tagsHTML = selectedCharacter.tags.map(tag => `
+                        <span class="px-2 py-1 bg-8b7355 text-f9f3e6 rounded-full text-xs">${tag}</span>
+                    `).join('');
+                    tagsContainer.innerHTML = tagsHTML;
+                }
+            }
+        }
+
+        // 更新对话历史
+        function updateChatHistory() {
+            const chatContainer = document.querySelector('.h-64.bg-fff9f0');
+            const chatHTML = chatHistory.map(chat => {
+                let prefix = '';
+                switch(chat.type) {
+                    case 'system':
+                        prefix = '[系统]';
+                        break;
+                    case 'gm':
+                        prefix = '[GM]';
+                        break;
+                    case 'player':
+                        prefix = `[${chat.playerName}]`;
+                        break;
+                }
+                return `<p class="text-sm text-4a3728">${prefix} ${chat.content}</p>`;
+            }).join('');
+            chatContainer.innerHTML = chatHTML;
+            // 滚动到底部
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+                const newMessage = {
+                    type: 'player',
+                    playerName: selectedCharacter ? selectedCharacter.name : '玩家',
+                    content: message,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // 清除所有行动结果按钮
+                clearActionResults();
+                
+                // 添加新消息
+                const chatContainer = document.querySelector('.h-64.bg-fff9f0');
+                const messageElement = document.createElement('p');
+                messageElement.className = 'text-sm text-4a3728';
+                messageElement.textContent = `[${newMessage.playerName}] ${newMessage.content}`;
+                chatContainer.appendChild(messageElement);
+                
+                // 清空输入框
+                messageInput.value = '';
+                
+                // 滚动到底部
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+
+        // 清除行动结果
+        function clearActionResults() {
+            const chatContainer = document.querySelector('.h-64.bg-fff9f0');
+            // 移除所有按钮容器
+            const buttonContainers = chatContainer.querySelectorAll('.mt-2.space-y-2');
+            buttonContainers.forEach(container => container.remove());
+        }
+
+        // 修改调查功能
+        function investigate() {
+            const selectedWorld = JSON.parse(localStorage.getItem('selectedWorld'));
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            
+            if (!selectedWorld || !selectedCharacter) {
+                addSystemMessage('错误：未选择世界观或角色');
+                return;
+            }
+
+            // 清除之前的行动结果
+            clearActionResults();
+
+            // 添加调查消息
+            addSystemMessage(`${selectedCharacter.name} 开始调查周围环境...`);
+            
+            // 模拟调查结果
+            const investigationResults = [
+                '发现了一些可疑的痕迹',
+                '注意到墙上有一幅奇怪的画',
+                '发现了一个隐藏的机关',
+                '找到了一些有价值的线索',
+                '发现了一个神秘的符号'
+            ];
+            
+            // 随机选择一个调查结果
+            const result = investigationResults[Math.floor(Math.random() * investigationResults.length)];
+            
+            // 延迟显示结果，增加真实感
+            setTimeout(() => {
+                addSystemMessage(`调查结果：${result}`);
+            }, 1000);
+        }
+
+        // 修改对话功能
+        function startDialogue() {
+            const selectedWorld = JSON.parse(localStorage.getItem('selectedWorld'));
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            
+            if (!selectedWorld || !selectedCharacter) {
+                addSystemMessage('错误：未选择世界观或角色');
+                return;
+            }
+
+            // 清除之前的行动结果
+            clearActionResults();
+
+            // 添加对话开始消息
+            addSystemMessage(`${selectedCharacter.name} 准备开始对话...`);
+            
+            // 模拟NPC对话选项
+            const dialogueOptions = [
+                '询问关于这个世界的信息',
+                '打听最近的传闻',
+                '请求帮助',
+                '分享自己的故事',
+                '询问特殊物品'
+            ];
+            
+            // 创建对话选项按钮
+            const dialogueContainer = document.createElement('div');
+            dialogueContainer.className = 'mt-2 space-y-2';
+            dialogueOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'vintage-button w-full p-2 rounded-md text-sm';
+                button.textContent = option;
+                button.onclick = () => handleDialogueOption(option);
+                dialogueContainer.appendChild(button);
+            });
+            
+            // 添加到对话历史
+            const chatContainer = document.querySelector('.h-64.bg-fff9f0');
+            chatContainer.appendChild(dialogueContainer);
+            
+            // 滚动到底部
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 处理对话选项
+        function handleDialogueOption(option) {
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            
+            // 添加玩家选择
+            addSystemMessage(`${selectedCharacter.name} 选择了：${option}`);
+            
+            // 模拟NPC回应
+            const responses = {
+                '询问关于这个世界的信息': '这个世界充满了神秘和未知，每个角落都隐藏着故事...',
+                '打听最近的传闻': '最近听说有人在古堡里发现了宝藏，但去的人都没有回来...',
+                '请求帮助': '我很乐意帮助你，但首先你需要证明自己的价值...',
+                '分享自己的故事': '你的故事很有趣，让我告诉你一些我的经历...',
+                '询问特殊物品': '我确实有一些特别的物品，但需要等价交换...'
+            };
+            
+            // 延迟显示NPC回应
+            setTimeout(() => {
+                addSystemMessage(`NPC回应：${responses[option]}`);
+            }, 1000);
+        }
+
+        // 修改互动功能
+        function interact() {
+            const selectedWorld = JSON.parse(localStorage.getItem('selectedWorld'));
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            
+            if (!selectedWorld || !selectedCharacter) {
+                addSystemMessage('错误：未选择世界观或角色');
+                return;
+            }
+
+            // 清除之前的行动结果
+            clearActionResults();
+
+            // 添加互动开始消息
+            addSystemMessage(`${selectedCharacter.name} 准备与环境互动...`);
+            
+            // 模拟可互动的物品
+            const interactiveItems = [
+                '古老的书籍',
+                '神秘的雕像',
+                '奇怪的装置',
+                '隐藏的开关',
+                '神秘的宝箱'
+            ];
+            
+            // 创建互动选项按钮
+            const interactionContainer = document.createElement('div');
+            interactionContainer.className = 'mt-2 space-y-2';
+            interactiveItems.forEach(item => {
+                const button = document.createElement('button');
+                button.className = 'vintage-button w-full p-2 rounded-md text-sm';
+                button.textContent = `与${item}互动`;
+                button.onclick = () => handleInteraction(item);
+                interactionContainer.appendChild(button);
+            });
+            
+            // 添加到对话历史
+            const chatContainer = document.querySelector('.h-64.bg-fff9f0');
+            chatContainer.appendChild(interactionContainer);
+            
+            // 滚动到底部
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 处理互动选项
+        function handleInteraction(item) {
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            
+            // 添加玩家选择
+            addSystemMessage(`${selectedCharacter.name} 尝试与${item}互动...`);
+            
+            // 模拟互动结果
+            const interactionResults = {
+                '古老的书籍': '你翻开书籍，发现了一些有趣的记载...',
+                '神秘的雕像': '雕像似乎对你有反应，发出微弱的光芒...',
+                '奇怪的装置': '装置开始运转，发出奇怪的声响...',
+                '隐藏的开关': '你触发了机关，某个隐藏的门打开了...',
+                '神秘的宝箱': '宝箱需要特殊的钥匙才能打开...'
+            };
+            
+            // 延迟显示互动结果
+            setTimeout(() => {
+                addSystemMessage(`互动结果：${interactionResults[item]}`);
+            }, 1000);
+        }
+
+        // 添加系统消息
+        function addSystemMessage(content) {
+            const chatContainer = document.querySelector('.h-64.bg-fff9f0');
+            const message = document.createElement('p');
+            message.className = 'text-sm text-4a3728';
+            message.textContent = `[系统] ${content}`;
+            chatContainer.appendChild(message);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 更新地图
+        function updateMap() {
+            const mapContainer = document.querySelector('.map-container');
+            if (selectedWorld) {
+                mapContainer.style.backgroundImage = `url('map/${selectedWorld.id}.jpg')`;
+            }
+        }
+
+        // 更新角色轮换显示
+        function updateTurnOrder() {
+            const turnOrder = document.getElementById('turnOrder');
+            turnOrder.innerHTML = '';
+
+            if (gameMode && gameMode.type !== 'single' && currentRoom && currentRoom.players) {
+                // 多人模式：显示所有玩家
+                currentRoom.players.forEach(player => {
+                    const playerElement = document.createElement('div');
+                    playerElement.className = 'flex flex-col items-center';
+                    playerElement.innerHTML = `
+                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-8b7355">
+                            <img src="avatar/${player.id}.jpg" alt="${player.name}" class="w-full h-full object-cover">
+                        </div>
+                        <p class="text-sm vintage-text mt-1">${player.name}</p>
+                    `;
+                    turnOrder.appendChild(playerElement);
+                });
+            } else {
+                // 单人模式：显示当前角色
+                const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+                if (selectedCharacter) {
+                    const playerElement = document.createElement('div');
+                    playerElement.className = 'flex flex-col items-center';
+                    playerElement.innerHTML = `
+                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-8b7355">
+                            <img src="avatar/${selectedCharacter.id}.jpg" alt="${selectedCharacter.name}" class="w-full h-full object-cover">
+                        </div>
+                        <p class="text-sm vintage-text mt-1">${selectedCharacter.name}</p>
+                    `;
+                    turnOrder.appendChild(playerElement);
+                }
+            }
+        }
+
+        // 显示玩家信息
+        function showPlayerInfo(playerId) {
+            const modal = document.getElementById('playerInfoModal');
+            
+            // 只处理多人模式
+            if (!currentRoom || !currentRoom.players) {
+                addSystemMessage('错误：未找到房间或玩家信息');
+                return;
+            }
+            
+            // 从房间玩家列表中获取玩家数据
+            const playerData = currentRoom.players.find(p => p.id === playerId);
+            
+            if (playerData) {
+                // 更新模态框内容
+                document.getElementById('modalPlayerAvatar').src = `avatar/${playerData.id}.jpg`;
+                document.getElementById('modalPlayerName').textContent = playerData.name;
+                document.getElementById('modalPlayerProfession').textContent = playerData.description;
+                
+                // 更新属性
+                const statsContainer = document.getElementById('modalPlayerStats');
+                if (statsContainer && playerData.stats) {
+                    const statsHTML = `
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="vintage-text">力量</span>
+                                <span>${playerData.stats.strength}/10</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" style="width: ${playerData.stats.strength * 10}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="vintage-text">敏捷</span>
+                                <span>${playerData.stats.agility}/10</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" style="width: ${playerData.stats.agility * 10}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="vintage-text">智力</span>
+                                <span>${playerData.stats.intelligence}/10</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" style="width: ${playerData.stats.intelligence * 10}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="vintage-text">魅力</span>
+                                <span>${playerData.stats.charisma}/10</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" style="width: ${playerData.stats.charisma * 10}%"></div>
+                            </div>
+                        </div>
+                    `;
+                    statsContainer.innerHTML = statsHTML;
+                }
+                
+                // 更新技能
+                const skillsContainer = document.getElementById('modalPlayerSkills');
+                if (skillsContainer && playerData.skills) {
+                    const skillsHTML = playerData.skills.map(skill => `
+                        <span class="px-2 py-1 bg-8b7355 text-f9f3e6 rounded-full text-xs">${skill}</span>
+                    `).join('');
+                    skillsContainer.innerHTML = skillsHTML;
+                }
+                
+                // 更新标签
+                const tagsContainer = document.getElementById('modalPlayerTags');
+                if (tagsContainer && playerData.tags) {
+                    const tagsHTML = playerData.tags.map(tag => `
+                        <span class="px-2 py-1 bg-8b7355 text-f9f3e6 rounded-full text-xs">${tag}</span>
+                    `).join('');
+                    tagsContainer.innerHTML = tagsHTML;
+                }
+                
+                // 更新位置信息
+                const locations = [
+                    '大厅',
+                    '图书馆',
+                    '花园',
+                    '地下室',
+                    '阁楼',
+                    '厨房',
+                    '餐厅',
+                    '卧室',
+                    '书房',
+                    '走廊'
+                ];
+                const randomLocation = locations[Math.floor(Math.random() * locations.length)];
+                document.getElementById('modalPlayerLocation').textContent = `当前位置：${randomLocation}`;
+                
+                modal.style.display = 'block';
+            }
+        }
+
+        // 关闭玩家信息
+        function closePlayerInfo() {
+            const modal = document.getElementById('playerInfoModal');
+            modal.style.display = 'none';
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('playerInfoModal');
+            if (event.target == modal) {
+                closePlayerInfo();
+            }
+        }
+
+        // 更新地图上的玩家标记
+        function updateMapMarkers() {
+            const mapContainer = document.querySelector('.map-container');
+            mapContainer.innerHTML = ''; // 清空现有标记
+
+            if (!currentRoom || !currentRoom.players) {
+                addSystemMessage('错误：未找到房间或玩家信息');
+                return;
+            }
+
+            // 为每个玩家分配一个随机位置
+            const positions = [
+                { top: '30%', left: '40%' },
+                { top: '50%', left: '60%' },
+                { top: '70%', left: '45%' },
+                { top: '40%', left: '70%' },
+                { top: '60%', left: '30%' },
+                { top: '20%', left: '50%' }
+            ];
+
+            // 随机打乱位置
+            const shuffledPositions = [...positions].sort(() => Math.random() - 0.5);
+            
+            currentRoom.players.forEach((player, index) => {
+                const position = shuffledPositions[index % positions.length];
+                const marker = document.createElement('div');
+                marker.className = 'player-marker';
+                marker.style.top = position.top;
+                marker.style.left = position.left;
+                marker.onclick = () => showPlayerInfo(player.id);
+                
+                marker.innerHTML = `
+                    <img src="avatar/${player.id}.jpg" alt="${player.name}">
+                `;
+                
+                mapContainer.appendChild(marker);
+            });
+        }
+
+        // 初始化房间玩家数据
+        function initializeRoomPlayers() {
+            if (!currentRoom) {
+                addSystemMessage('错误：未找到房间信息');
+                return;
+            }
+
+            // 确保房间有玩家数据
+            if (!currentRoom.players) {
+                const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+                if (!selectedCharacter) {
+                    addSystemMessage('错误：未选择角色');
+                    return;
+                }
+
+                // 创建初始玩家数据
+                currentRoom.players = [{
+                    id: selectedCharacter.id,
+                    name: selectedCharacter.name,
+                    avatar: `avatar/${selectedCharacter.id}.jpg`,
+                    description: selectedCharacter.description,
+                    stats: selectedCharacter.stats,
+                    skills: selectedCharacter.skills,
+                    tags: selectedCharacter.tags
+                }];
+
+                // 更新当前房间数据
+                localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+            }
+        }
+
+        // 显示退出房间确认弹窗
+        function showExitModal() {
+            const modal = document.getElementById('exitRoomModal');
+            modal.style.display = 'block';
+        }
+
+        // 关闭退出房间确认弹窗
+        function closeExitModal() {
+            const modal = document.getElementById('exitRoomModal');
+            modal.style.display = 'none';
+        }
+
+        // 退出房间
+        function exitRoom() {
+            // 清除游戏相关数据
+            localStorage.removeItem('currentRoom');
+            localStorage.removeItem('gameMode');
+            
+            // 添加退出消息
+            addSystemMessage('正在退出房间...');
+            
+            // 延迟跳转，让用户看到退出消息
+            setTimeout(() => {
+                // 根据游戏模式决定跳转页面
+                const gameMode = JSON.parse(localStorage.getItem('gameMode'));
+                if (gameMode && gameMode.type === 'single') {
+                    window.location.href = 'launch.html';
+                } else {
+                    window.location.href = 'launch.html';
+                }
+            }, 1000);
+        }
+
+        // 剧本数据示例
+        const scriptData = {
+            overview: {
+                title: "剧情概览",
+                content: `
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-bold vintage-text">故事背景</h3>
+                        <p class="text-gray-600">这是一个充满神秘与冒险的世界。古老的城堡中隐藏着不为人知的秘密，而你的任务就是揭开这些谜题...</p>
+                        
+                        <h3 class="text-xl font-bold vintage-text mt-6">主要剧情</h3>
+                        <div class="space-y-2">
+                            <p class="text-gray-600">1. 初入城堡：探索城堡的各个区域，寻找线索</p>
+                            <p class="text-gray-600">2. 解开谜题：收集关键物品，破解机关</p>
+                            <p class="text-gray-600">3. 揭示真相：发现城堡的秘密，面对最终挑战</p>
+                        </div>
+                        
+                        <h3 class="text-xl font-bold vintage-text mt-6">游戏目标</h3>
+                        <p class="text-gray-600">在限定时间内，解开城堡中的所有谜题，揭示隐藏的真相。</p>
+                    </div>
+                `
+            },
+            characters: {
+                title: "角色介绍",
+                content: `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="parchment p-4 rounded-lg border-2 border-8b7355">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-lg font-bold vintage-text">玩家角色</h3>
+                                <span class="px-2 py-1 bg-8b7355 text-f9f3e6 rounded-full text-xs">玩家</span>
+                            </div>
+                            <div class="flex items-center space-x-3 mb-2">
+                                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-8b7355">
+                                    <img id="playerCharacterImage" src="" alt="玩家角色" class="w-full h-full object-cover">
+                                </div>
+                                <div>
+                                    <p id="playerCharacterName" class="font-medium vintage-text"></p>
+                                    <p id="playerCharacterDesc" class="text-sm text-gray-600"></p>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2" id="playerCharacterTags">
+                                <!-- 玩家角色标签将通过 JavaScript 动态添加 -->
+                            </div>
+                        </div>
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">城堡主人</h3>
+                            <p class="text-gray-600">神秘的古堡主人，似乎知道很多秘密...</p>
+                        </div>
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">管家</h3>
+                            <p class="text-gray-600">城堡的管家，对城堡的每个角落都很熟悉...</p>
+                        </div>
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">神秘访客</h3>
+                            <p class="text-gray-600">最近来到城堡的访客，行为可疑...</p>
+                        </div>
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">老园丁</h3>
+                            <p class="text-gray-600">在城堡花园工作的老人，知道一些往事...</p>
+                        </div>
+                    </div>
+                `
+            },
+            locations: {
+                title: "场景地图",
+                content: `
+                    <div class="space-y-4">
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">大厅</h3>
+                            <p class="text-gray-600">城堡的入口大厅，装饰着古老的油画和雕塑。</p>
+                        </div>
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">图书馆</h3>
+                            <p class="text-gray-600">收藏着大量古籍的图书馆，可能藏有重要线索。</p>
+                        </div>
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">地下室</h3>
+                            <p class="text-gray-600">阴暗潮湿的地下室，需要特殊钥匙才能进入。</p>
+                        </div>
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">花园</h3>
+                            <p class="text-gray-600">城堡后方的花园，种植着各种奇异的植物。</p>
+                        </div>
+                    </div>
+                `
+            },
+            items: {
+                title: "重要物品",
+                content: `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">古老钥匙</h3>
+                            <p class="text-gray-600">可以打开城堡某些房间的钥匙。</p>
+                        </div>
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">神秘日记</h3>
+                            <p class="text-gray-600">记录着城堡历史的日记本。</p>
+                        </div>
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">魔法宝石</h3>
+                            <p class="text-gray-600">具有特殊力量的宝石。</p>
+                        </div>
+                        <div class="parchment p-4 rounded-lg">
+                            <h3 class="text-lg font-bold vintage-text mb-2">古老地图</h3>
+                            <p class="text-gray-600">标记着城堡秘密通道的地图。</p>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        // 显示剧本弹窗
+        function showScriptModal() {
+            const modal = document.getElementById('scriptModal');
+            modal.style.display = 'block';
+            // 默认显示剧情概览
+            showScriptSection('overview');
+        }
+
+        // 关闭剧本弹窗
+        function closeScriptModal() {
+            const modal = document.getElementById('scriptModal');
+            modal.style.display = 'none';
+        }
+
+        // 显示剧本特定部分
+        function showScriptSection(section) {
+            const content = document.getElementById('scriptContent');
+            const sectionData = scriptData[section];
+            
+            if (sectionData) {
+                content.innerHTML = sectionData.content;
+                
+                // 如果是角色介绍部分，更新玩家角色信息
+                if (section === 'characters') {
+                    const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+                    if (selectedCharacter) {
+                        // 更新玩家角色图片
+                        const playerImage = document.getElementById('playerCharacterImage');
+                        if (playerImage) {
+                            playerImage.src = `avatar/${selectedCharacter.id}.jpg`;
+                        }
+                        
+                        // 更新玩家角色名称
+                        const playerName = document.getElementById('playerCharacterName');
+                        if (playerName) {
+                            playerName.textContent = selectedCharacter.name;
+                        }
+                        
+                        // 更新玩家角色描述
+                        const playerDesc = document.getElementById('playerCharacterDesc');
+                        if (playerDesc) {
+                            playerDesc.textContent = selectedCharacter.description;
+                        }
+                        
+                        // 更新玩家角色标签
+                        const playerTags = document.getElementById('playerCharacterTags');
+                        if (playerTags) {
+                            playerTags.innerHTML = selectedCharacter.tags.map(tag => `
+                                <span class="px-2 py-1 bg-8b7355 text-f9f3e6 rounded-full text-xs">${tag}</span>
+                            `).join('');
+                        }
+                    }
+                }
+            }
+        }
+
+        // 页面加载时初始化
+        function initializePage() {
+            updateCharacterInfo();
+            updateChatHistory();
+            updateMap();
+            initializeRoomPlayers();
+            updateMapMarkers();
+            updateTurnOrder();
+            updateInventory();
+
+            // 添加发送按钮点击事件
+            const sendButton = document.getElementById('sendButton');
+            const messageInput = document.getElementById('messageInput');
+            
+            sendButton.addEventListener('click', sendMessage);
+            
+            // 添加回车发送功能
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // 添加退出房间按钮事件
+            const exitButton = document.querySelector('button.bg-red-800');
+            if (exitButton) {
+                exitButton.onclick = showExitModal;
+            }
+
+            // 添加查看剧本按钮事件
+            const scriptButton = document.querySelector('button:has(i.fa-book)');
+            if (scriptButton) {
+                scriptButton.onclick = showScriptModal;
+            }
+
+            console.log('数据导入成功');
+        }
+
+        // 页面加载完成后初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePage);
+        } else {
+            initializePage();
+        }
+    </script>
+</body>
+</html>
