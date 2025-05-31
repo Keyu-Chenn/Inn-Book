@@ -232,56 +232,56 @@ const genres = [
     label: '奇幻',
     value: 'fantasy',
     icon: 'https://img.icons8.com/color/48/000000/fantasy.png',
-    image: 'https://img.freepik.com/free-photo/fantasy-castle-surrounded-by-mysterious-foggy-landscape-generative-ai_188544-12530.jpg',
+    image: 'https://tse2-mm.cn.bing.net/th/id/OIP-C.v7RVeUgOBotiRFt4ljzwsgHaE7?w=291&h=194&c=7&r=0&o=5&dpr=2&pid=1.7',
     description: '存在魔法、神话生物、架空的古代或中世纪背景、史诗般的正邪对抗等。可以是高魔或低魔，剑与魔法是常见元素。'
   },
   {
     label: '科幻',
     value: 'scifi',
     icon: 'https://img.icons8.com/color/48/000000/sci-fi.png',
-    image: 'https://img.freepik.com/free-photo/futuristic-city-with-neon-lights-generative-ai_169016-29375.jpg',
+    image: 'https://tse1-mm.cn.bing.net/th/id/OIP-C.XHr4-gbzGnFbNMUv4iapewHaE7?w=237&h=180&c=7&r=0&o=5&dpr=2&pid=1.7',
     description: '基于科学（或伪科学）的幻想，涉及未来科技、太空探索、外星文明、人工智能、基因工程、平行宇宙等。'
   },
   {
     label: '武侠/仙侠',
     value: 'wuxia',
-    icon: 'https://img.icons8.com/color/48/000000/samurai.png',
-    image: 'https://img.freepik.com/free-photo/pavilion-with-pagoda-mountains-sunset-asian-landscape-generative-ai_188544-12325.jpg',
+    icon: 'https://img.icons8.com/?size=100&id=k54TXBViMvmF&format=png&color=000000',
+    image: 'https://tse2-mm.cn.bing.net/th/id/OIP-C.21tdoCgdyY8li4zOmfYAyAHaJG?w=186&h=229&c=7&r=0&o=5&dpr=2&pid=1.7',
     description: '源于中国文化背景，强调个体通过武功或修仙追求力量、道义或长生。江湖恩怨、门派纷争、法宝秘籍、天地灵气等是核心。'
   },
   {
     label: '现代都市',
     value: 'modern',
     icon: 'https://img.icons8.com/color/48/000000/city.png',
-    image: 'https://img.freepik.com/free-photo/beautiful-aerial-shot-city-night-with-colorful-lights_181624-24544.jpg',
+    image: 'https://tse3-mm.cn.bing.net/th/id/OIP-C.EMnZZOcr3sIVNAQS5N7DNQHaEK?w=295&h=180&c=7&r=0&o=5&dpr=2&pid=1.7',
     description: '背景设定在与现实世界相似的现代（或近未来）城市与社会。故事可能完全写实，或融入都市传说、隐秘的超自然力量（都市奇幻）、略微超前的科技等。'
   },
   {
     label: '历史架空',
     value: 'historical',
     icon: 'https://img.icons8.com/color/48/000000/treasure-map.png',
-    image: 'https://img.freepik.com/free-photo/old-street-with-buildings-ancient-european-city-generative-ai_188544-9634.jpg',
+    image: 'https://tse1-mm.cn.bing.net/th/id/OIP-C.k2HZm1hyxleljSB4GFMtYQHaHa?w=172&h=180&c=7&r=0&o=5&dpr=2&pid=1.7',
     description: '以真实历史的某个时期为蓝本，但允许虚构人物、事件或对历史走向进行改动。也包括完全虚构的、但科技与社会形态类似古代/近代的非奇幻世界。'
   },
   {
     label: '末世废土',
     value: 'postapocalyptic',
-    icon: 'https://img.icons8.com/color/48/000000/nuclear-plant.png',
-    image: 'https://img.freepik.com/free-photo/post-apocalyptic-survivor-gas-mask-standing-abandoned-building-digital-art-style-illustration-painting_456031-118.jpg',
+    icon: 'https://img.icons8.com/?size=100&id=oFlkTTjrFXc6&format=png&color=000000',
+    image: 'https://tse4-mm.cn.bing.net/th/id/OIP-C.0eRmNFzkSd3iO3rWvUsStgHaEJ?w=288&h=180&c=7&r=0&o=5&dpr=2&pid=1.7',
     description: '文明经历巨大灾难（战争、瘟疫、自然灾害、丧尸等）后崩溃的世界。资源匮乏，秩序崩坏，生存是首要主题。'
   },
   {
     label: '赛博朋克',
     value: 'cyberpunk',
-    icon: 'https://img.icons8.com/color/48/000000/cyberpunk.png',
-    image: 'https://img.freepik.com/free-photo/futuristic-cyber-digital-background-with-circuit-lines_23-2148844121.jpg',
+    icon: 'https://img.icons8.com/?size=100&id=WXDF19y32Scg&format=png&color=000000',
+    image: 'https://tse2-mm.cn.bing.net/th/id/OIP-C.6mbDBty4Jzw0nqccvIcO-QHaHS?w=161&h=180&c=7&r=0&o=5&dpr=2&pid=1.7',
     description: '"高科技，低生活"。通常描绘近未来反乌托邦的社会，信息技术高度发达，大型企业或组织掌控一切，社会阶级分化严重，个体在压抑的霓虹都市中挣扎。'
   },
   {
     label: '悬疑/恐怖',
     value: 'horror',
-    icon: 'https://img.icons8.com/color/48/000000/haunted.png',
-    image: 'https://img.freepik.com/free-photo/spooky-horror-woman-abandoned-house_53876-143292.jpg',
+    icon: 'https://img.icons8.com/?size=100&id=1649&format=png&color=000000',
+    image: 'https://tse1-mm.cn.bing.net/th/id/OIP-C.yMlmDmdjWw2zh5cOp1Ll_QHaFs?w=240&h=185&c=7&r=0&o=5&dpr=2&pid=1.7',
     description: '主要目标是营造紧张、不安、恐惧或毛骨悚然的氛围。可能涉及超自然现象、未知生物、心理惊悚、诡异谜团等。世界观本身可能平凡，但充满了不祥的秘密。'
   }
 ]
@@ -308,7 +308,7 @@ const tones = [
   {
     label: '黑暗/冷峻',
     value: 'dark',
-    icon: 'https://img.icons8.com/color/48/000000/moon-symbol.png',
+    icon: 'https://img.icons8.com/?size=100&id=Dy7MNrQn8jEs&format=png&color=000000',
     description: '世界观较为残酷，道德界限模糊，好人未必有好报，常伴有压抑、绝望或悲观的色彩。'
   },
   {
@@ -320,7 +320,7 @@ const tones = [
   {
     label: '神秘/未知',
     value: 'mysterious',
-    icon: 'https://img.icons8.com/color/48/000000/mystery.png',
+    icon: 'https://img.icons8.com/?size=100&id=YreU3ymPDktD&format=png&color=000000',
     description: '充满了未解之谜、古老的秘密、难以捉摸的现象或力量，引人探索和遐想。'
   },
   {
@@ -344,7 +344,7 @@ const tones = [
   {
     label: '残酷/挣扎',
     value: 'gritty',
-    icon: 'https://img.icons8.com/color/48/000000/fist.png',
+    icon: 'https://img.icons8.com/?size=100&id=64470&format=png&color=000000',
     description: '直面生存的艰难、暴力的原始、人性的阴暗面，角色常在困境中艰难求生。'
   },
   {
@@ -356,13 +356,13 @@ const tones = [
   {
     label: '冒险/热血',
     value: 'adventurous',
-    icon: 'https://img.icons8.com/color/48/000000/treasure-map.png',
+    icon: 'https://img.icons8.com/?size=100&id=jy358Co50jA7&format=png&color=000000',
     description: '充满探索未知、挑战强敌、追求目标的激情与活力，节奏通常较为明快。'
   },
   {
     label: '怪诞/荒谬',
     value: 'bizarre',
-    icon: 'https://img.icons8.com/color/48/000000/tophat.png',
+    icon: 'https://img.icons8.com/?size=100&id=nauoCZ1MHEye&format=png&color=000000',
     description: '打破常规逻辑，充满奇特、荒诞不经的设定或事件，可能带有讽刺或黑色幽默。'
   }
 ]

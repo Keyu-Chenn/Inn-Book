@@ -1,9 +1,12 @@
 import monumentValley from '@/assets/img/纪念碑谷.jpg'
+import avatar1 from '@/assets/img/艾琳·星语.png'
+import avatar2 from '@/assets/img/莱恩·铁臂.png'
+import avatar3 from '@/assets/img/阿尔法-7.png'
 
 export default [
     {
         name: '艾琳·星语',
-        portrait: monumentValley,
+        portrait: avatar1,
         race: '精灵',
         occupation: '森林守护者',
         age: '120',
@@ -23,7 +26,7 @@ export default [
     },
     {
         name: '莱恩·铁臂',
-        portrait: monumentValley,
+        portrait: avatar2,
         race: '人类',
         occupation: '佣兵队长',
         age: '34',
@@ -43,7 +46,7 @@ export default [
     },
     {
         name: '阿尔法-7',
-        portrait: monumentValley,
+        portrait: avatar3,
         race: '机器人',
         occupation: '流浪AI',
         age: '未知',

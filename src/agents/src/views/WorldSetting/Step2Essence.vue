@@ -37,7 +37,7 @@
                 <Plus />
               </el-icon>
               <span class="upload-text">点击上传世界地图</span>
-              <span class="upload-hint">支持 JPG、PNG 格式，建议尺寸 1920x1080</span>
+              <span class="upload-hint">支持 JPG、PNG 格式</span>
             </template>
             <img v-else :src="form.mapUrl" class="preview-image" />
             <input type="file" ref="mapInput" accept="image/jpeg,image/png" style="display: none"

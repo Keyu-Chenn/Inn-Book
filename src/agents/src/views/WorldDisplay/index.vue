@@ -193,6 +193,11 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import defaultImage from '@/assets/img/纪念碑谷.jpg'
+import defaultImage1 from '@/assets/img/星辰大海.png'
+import defaultImage2 from '@/assets/img/魔法学院.png'
+import defaultImage3 from '@/assets/img/末日求生.png'
+import defaultImage4 from '@/assets/img/江湖风云.png'
+import defaultImage5 from '@/assets/img/未来都市.png'
 import Pop from './Pop.vue'
 import worldDetails from './presetWorld.js'
 
@@ -238,7 +243,7 @@ const worlds = ref([
         description: '一个充满未知与探索的科幻世界，人类文明已经发展到了星际时代...',
         genre: '科幻',
         status: '进行中',
-        image: defaultImage,
+        image: defaultImage1,
         createdAt: '2024-03-15',
         modifiedAt: '2024-03-20'
     },
@@ -248,7 +253,7 @@ const worlds = ref([
         description: '在这个世界中，魔法是真实存在的，年轻的魔法师们在古老的学院中学习...',
         genre: '奇幻',
         status: '已完成',
-        image: defaultImage,
+        image: defaultImage2,
         createdAt: '2024-03-10',
         modifiedAt: '2024-03-18'
     },
@@ -258,7 +263,7 @@ const worlds = ref([
         description: '一场突如其来的灾难改变了世界，幸存者们在这个残酷的新世界中挣扎求生...',
         genre: '末日',
         status: '构思中',
-        image: defaultImage,
+        image: defaultImage3,
         createdAt: '2024-03-05',
         modifiedAt: '2024-03-05'
     },
@@ -268,7 +273,7 @@ const worlds = ref([
         description: '一个充满侠义与恩怨的武侠世界，各大门派之间的明争暗斗从未停歇...',
         genre: '武侠',
         status: '草稿',
-        image: defaultImage,
+        image: defaultImage4,
         createdAt: '2024-03-01',
         modifiedAt: '2024-03-12'
     },
@@ -278,7 +283,7 @@ const worlds = ref([
         description: '在科技高度发达的未来，人类与人工智能共同生活在这个充满可能性的城市中...',
         genre: '科幻',
         status: '进行中',
-        image: defaultImage,
+        image: defaultImage5,
         createdAt: '2024-02-28',
         modifiedAt: '2024-03-19'
     }
@@ -340,7 +345,7 @@ function getStatusTagType(status) {
 
 // 卡片操作函数
 function createNewWorld() {
-    router.push('/world/create')
+    router.push('/world-setting')
 }
 
 function editWorld(world) {

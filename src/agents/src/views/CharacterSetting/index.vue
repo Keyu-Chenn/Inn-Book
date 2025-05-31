@@ -41,12 +41,15 @@
         <ul class="character-list">
           <li v-for="(character, idx) in characters" :key="character.id"
             :class="['character-list-item', { selected: idx === selectedIdx }]" @click="selectCharacter(idx)">
-            <div class="avatar-placeholder">
+            <div class="avatar-placeholder" v-if="!character.portrait">
               <svg viewBox="0 0 48 48" width="44" height="44">
                 <circle cx="24" cy="24" r="22" fill="#e0e0e0" />
                 <ellipse cx="24" cy="20" rx="9" ry="9" fill="#c19a49" opacity="0.3" />
                 <ellipse cx="24" cy="36" rx="13" ry="7" fill="#c19a49" opacity="0.15" />
               </svg>
+            </div>
+            <div class="avatar-image" v-else>
+              <img :src="character.portrait" alt="角色头像" />
             </div>
             <span class="character-name">{{ character.name || '未命名角色' }}</span>
             <el-icon class="delete-icon" @click.stop="deleteCharacter(idx)">
@@ -393,6 +396,23 @@ function exportAll() {
   margin: 0;
 }
 
+
+.avatar-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(193, 154, 73, 0.10);
+  border: 2px solid #e6dcbf;
+}
+
+.avatar-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 @media (max-width: 900px) {
   .character-setting-layout {
     flex-direction: column;
@@ -422,5 +442,6 @@ function exportAll() {
   .main-title-wrapper {
     margin-bottom: 0.7rem;
   }
+
 }
 </style>

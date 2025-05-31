@@ -130,7 +130,8 @@ const filteredCharacters = computed(() => {
 
 function addCharacter(character) {
   if (!selectedCharacters.value.find(c => c.name === character.name)) {
-    selectedCharacters.value.push(character)
+    // console.log('添加角色:', character.name, '头像:', character.portrait);
+    selectedCharacters.value.push({ ...character });
   }
 }
 function removeCharacter(character) {
@@ -158,6 +159,8 @@ onMounted(() => {
   if (worldEditData && worldEditData.value && Array.isArray(worldEditData.value.characters)) {
     selectedCharacters.value = [...worldEditData.value.characters]
   }
+  // console.log('已选择角色:', selectedCharacters.value.map(c => ({ name: c.name, portrait: c.portrait })));
+  // console.log('所有角色:', filteredCharacters.value.map(c => ({ name: c.name, portrait: c.portrait })));
 })
 
 // 添加种族

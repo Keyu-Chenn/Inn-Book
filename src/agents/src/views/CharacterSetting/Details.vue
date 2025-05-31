@@ -318,7 +318,14 @@ function generatePortrait() {
     padding: 2px 10px;
     cursor: pointer;
     box-shadow: 0 1px 4px rgba(193, 154, 73, 0.10);
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s, color 0.2s, opacity 0.3s;
+    opacity: 0;
+    /* 初始状态隐藏 */
+}
+
+.portrait-img-wrapper:hover .portrait-remove {
+    opacity: 1;
+    /* 悬停时显示 */
 }
 
 .portrait-remove:hover {
