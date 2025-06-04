@@ -32,6 +32,11 @@
             padding: 8px 18px; font-size: 14px; border-radius:4px; text-decoration:none; cursor:pointer; transition: background-color 0.3s; font-weight:500;
         }
         .editor-nav .btn-editor:hover { background-color: #a88035; }
+        .btn-editor {
+            background-color: var(--accent-gold); color: var(--parchment-light); border: none;
+            padding: 8px 18px; font-size: 14px; border-radius:4px; text-decoration:none; cursor:pointer; transition: background-color 0.3s; font-weight:500;
+        }
+        .btn-editor:hover { background-color: #a88035; }
         .editor-nav .btn-editor-outline {
             background: transparent; border: 1px solid var(--parchment-light); color: var(--parchment-light);
         }

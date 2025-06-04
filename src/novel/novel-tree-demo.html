@@ -29,13 +29,13 @@
                     <polyline points="7 3 7 8 15 8"/>
                   </svg>
                 </button>
-                <button class="btn-icon btn-export" title="导出">
+                <!-- <button class="btn-icon btn-export" title="导出">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
-                </button>
+                </button> -->
                 <div class="user-info">
                     <a href="dashboard-overview.html" class="avatar">
                         <svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -63,20 +63,20 @@
             
             <div style="margin-top:5px; padding-top:5px;">
               <h3>主要角色</h3>
-              <ul class="character-list scrollable-list">
-                <li>
+              <ul id="characterList" class="character-list scrollable-list">
+                <li data-character="阿丽塔">
                   <svg viewBox="0 0 24 24" class="char-icon" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v2"/></svg>
                   <span contenteditable>阿丽塔</span>
                 </li>
-                <li>
+                <li data-character="伊德">
                   <svg viewBox="0 0 24 24" class="char-icon" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v2"/></svg>
                   <span contenteditable>伊德</span>
                 </li>
-                <li>
+                <li data-character="西塔">
                   <svg viewBox="0 0 24 24" class="char-icon" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v2"/></svg>
                   <span contenteditable>西塔</span>
                 </li>
-                <li>
+                <li data-character="伊莱亚斯">
                   <svg viewBox="0 0 24 24" class="char-icon" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v2"/></svg>
                   <span contenteditable>伊莱亚斯</span>
                 </li>
@@ -84,6 +84,11 @@
             </div>
         </aside>
         <main class="main-editor-area" style="min-width: 1000px;">
+          <div style="position: absolute; right: 80px; top: 100px;">
+            <button id="resetFilter" class="btn-editor btn-editor-outline" style="padding: 6px 12px;">
+              全部场景
+            </button>
+          </div>
           <div class="scenes-wrapper">
             <h3 id="scenesHeader">全部场景</h3>
             <a href="novel-sim.html" style="text-decoration: none; color: inherit;">
@@ -136,22 +141,30 @@
 };
 
   // 渲染指定章节的场景
-  function renderScenes(chapterIdx) {
-    // 标题切换
-    if (chapterIdx) {
-      scenesHeader.textContent = `第${chapterIdx}章 场景`;
-    } else {
-      scenesHeader.textContent = '全部场景';
-    }
+  function renderScenes(scenes, titleText) {
+    const scenesHeader = document.getElementById('scenesHeader');
+    const scenesList   = document.getElementById('scenesList');
 
+    // 更新标题
+    scenesHeader.textContent = titleText || '全部场景';
+
+    // 清空已有内容
     scenesList.innerHTML = '';
-    // 拿到当前章节或全部场景
-    const list = chapterIdx ? scenesData[chapterIdx] || [] : 
-                Object.values(scenesData).flat();
+
+    // 如果没有场景，直接返回
+    if (!scenes || scenes.length === 0) {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.textContent = '无匹配场景';
+      emptyDiv.style.color = 'var(--ink-light)';
+      emptyDiv.style.fontSize = '16px';
+      emptyDiv.style.padding = '20px';
+      scenesList.appendChild(emptyDiv);
+      return;
+    }
 
     // 分组：order -> 场景数组
     const groups = {};
-    list.forEach(s => {
+    scenes.forEach(s => {
       (groups[s.order] = groups[s.order] || []).push(s);
     });
     // 排序 order
@@ -186,8 +199,11 @@
     });
   }
 
-  // 初始化
-  renderScenes();  // 默认全部场景
+  // 首次渲染：全部场景
+  function getAllScenesFlattened() {
+    return Object.values(scenesData).reduce((acc, arr) => acc.concat(arr), []);
+  }
+  renderScenes(getAllScenesFlattened(), '全部场景');
 
   // 切换章节联动场景与高亮
   chapterList.addEventListener('click', e => {
@@ -199,11 +215,15 @@
       const text = e.target.textContent;
       const match = text.match(/第(.+?)章/);
       const cnMap = { '一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10 };
-      let idx = null;
+      let chapterIdx = null;
       if (match) {
-        idx = cnMap[match[1]] || null;
+        chapterIdx = cnMap[match[1]] || null;
       }
-      if (idx) renderScenes(idx);
+      if (chapterIdx) {
+        const chapterSences = chapterIdx ? scenesData[chapterIdx] || [] : 
+                      Object.values(scenesData).flat();
+        renderScenes(chapterSences, `第${chapterIdx}章 场景`);
+      }
     }
   });
 
@@ -235,6 +255,45 @@
     });
   }
   initDragAndDrop();
+
+  // --------------- 4. 点击角色进行过滤并重铸时间线 ---------------
+  const characterList = document.getElementById('characterList');
+  characterList.addEventListener('click', e => {
+    // 确保点击到 <li> 里，而不是 SVG/文本
+    const li = e.target.closest('li[data-character]');
+    console.log(li)
+    if (!li) return;
+
+    // 1) 切换选中样式
+    characterList.querySelectorAll('li').forEach(el => el.classList.remove('active'));
+    li.classList.add('active');
+
+    // 2) 取出角色名称
+    const charName = li.getAttribute('data-character');
+
+    // 3) 在所有场景中筛选出包含该角色的那一批
+    const filtered = getAllScenesFlattened().filter(scn =>
+      scn.roles.includes(charName)
+    );
+
+    // 4) 更新标题为“XX 的场景”
+    const newTitle = `${charName} 的场景`;
+
+    // 5) 渲染出筛选结果
+    console.log(filtered)
+    renderScenes(filtered, newTitle);
+  });
+
+
+  // --------------- 5. 如果再点击空白或某按钮重置回“全部场景” ---------------
+  // 假设有一个“重置”按钮可以清除角色筛选：
+  const resetCharBtn = document.getElementById('resetFilter');
+  if (resetCharBtn) {
+    resetCharBtn.addEventListener('click', () => {
+      characterList.querySelectorAll('li').forEach(el => el.classList.remove('active'));
+      renderScenes(getAllScenesFlattened(), '全部场景');
+    });
+  }
 </script>
 </body>
 </html>

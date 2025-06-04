@@ -361,13 +361,13 @@
           <polyline points="7 3 7 8 15 8"/>
         </svg>
       </button>
-      <button class="btn-icon btn-export" title="导出">
+      <!-- <button class="btn-icon btn-export" title="导出">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
-      </button>
+      </button> -->
       <div class="user-info">
           <a href="dashboard-overview.html" class="avatar">
             <svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -937,22 +937,20 @@
   let simMode = 'manual'; // 默认手动
   function toggleSimMode() {
     simMode = simMode === 'auto' ? 'manual' : 'auto';
-    const target = document.getElementById('dialogueTarget');
-    const input = document.getElementById('chatInput');
-    const sendBtn = document.querySelector('.chat-input-row button');
+    const dia = document.getElementById('btn-dialogue');
+    const tho = document.getElementById('btn-thought');
+    const act = document.getElementById('btn-action');
+    const tar = document.getElementById('dialogueTarget');
+    const inp = document.getElementById('chatInput');
+    const sed = document.querySelector('.chat-input-row button');
+    const btnList = [dia, tho, act, tar, inp, sed];
 
     const isDisabled = simMode === 'auto';
-    target.disabled = isDisabled;
-    input.disabled = isDisabled;
-    sendBtn.disabled = isDisabled;
-
-    // 设置视觉变灰
-    target.style.opacity = isDisabled ? '0.5' : '1';
-    input.style.opacity = isDisabled ? '0.5' : '1';
-    sendBtn.style.opacity = isDisabled ? '0.5' : '1';
-    target.style.pointerEvents = isDisabled ? 'none' : 'auto';
-    input.style.pointerEvents = isDisabled ? 'none' : 'auto';
-    sendBtn.style.pointerEvents = isDisabled ? 'none' : 'auto';
+    btnList.forEach(btn => {
+      btn.disabled = isDisabled;
+      btn.style.opacity = isDisabled ? '0.5' : '1';
+      btn.style.pointerEvents = isDisabled ? 'none' : 'auto';
+    });
 
     const btn = document.getElementById('simModeBtn');
     if (btn) btn.textContent = simMode === 'auto' ? '手动模式' : '自动模式';
@@ -962,6 +960,7 @@
   let replayPaused = false;
   let replayQueue = [];
   let replayReplay = [];
+  let fullData = [];
 
   async function restartSimulation(currentOnly = false) {
     console.log("restart");
@@ -974,6 +973,7 @@
     const filtered = currentOnly ? fullData.filter(e => isVisibleToActor(e, selectedActor.value)) : fullData;
     replayQueue = [...filtered];
     replayReplay = [];
+    document.getElementById('dialogue-data').textContent = JSON.stringify(replayReplay, null, 2);
 
     for (let i = 0; i < replayQueue.length; i++) {
       const next = replayQueue[i];
