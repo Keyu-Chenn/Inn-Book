@@ -298,6 +298,20 @@
             players: []
         };
 
+        // 获取世界观信息
+        const selectedWorld = JSON.parse(localStorage.getItem('selectedWorld'));
+        if (selectedWorld) {
+            currentRoom.world = selectedWorld;
+            localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+        }
+
+        // 获取房间名称
+        const roomName = localStorage.getItem('roomName');
+        if (roomName) {
+            currentRoom.name = roomName;
+            localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+        }
+
         // 更新最大玩家数
         function updateMaxPlayers(maxPlayers) {
             currentRoom.maxPlayers = parseInt(maxPlayers);
@@ -325,23 +339,21 @@
             playerList.appendChild(hostSlot);
 
             // 显示已加入的玩家
-            if (currentRoom.players && currentRoom.players.length > 0) {
-                currentRoom.players.forEach(player => {
-                    const playerSlot = document.createElement('div');
-                    playerSlot.className = 'player-slot parchment rounded-lg p-4 text-center';
-                    playerSlot.innerHTML = `
-                        <div class="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden border-2 border-8b7355">
-                            <img src="${player.avatar}" alt="${player.name}" class="w-full h-full object-cover">
-                        </div>
-                        <p class="font-medium vintage-text">${player.name}</p>
-                        <p class="text-sm text-gray-600">${player.isAI ? 'AI代理' : '玩家'}</p>
-                    `;
-                    playerList.appendChild(playerSlot);
-                });
-            }
+            currentRoom.players.forEach(player => {
+                const playerSlot = document.createElement('div');
+                playerSlot.className = 'player-slot parchment rounded-lg p-4 text-center';
+                playerSlot.innerHTML = `
+                    <div class="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden border-2 border-8b7355">
+                        <img src="${player.avatar}" alt="${player.name}" class="w-full h-full object-cover">
+                    </div>
+                    <p class="font-medium vintage-text">${player.name}</p>
+                    <p class="text-sm text-gray-600">${player.isAI ? 'AI代理' : '玩家'}</p>
+                `;
+                playerList.appendChild(playerSlot);
+            });
 
             // 添加剩余的空位（不包含GM）
-            const remainingSlots = maxPlayers - (currentRoom.players ? currentRoom.players.length : 0);
+            const remainingSlots = maxPlayers - currentRoom.players.length;
             for (let i = 0; i < remainingSlots; i++) {
                 const playerSlot = document.createElement('div');
                 playerSlot.className = 'player-slot empty parchment rounded-lg p-4 text-center';
@@ -520,7 +532,7 @@
             document.getElementById('roomIdInput').value = currentRoom.id;
             
             // 更新房间名称
-            document.getElementById('roomNameInput').value = currentRoom.name;
+            document.getElementById('roomNameInput').value = currentRoom.name || '未命名房间';
             
             // 更新房间状态
             document.getElementById('roomStatusSelect').value = currentRoom.status;
@@ -530,8 +542,7 @@
             document.getElementById('worldName').textContent = worldName;
             
             // 更新玩家数量
-            const playerCount = currentRoom.players ? currentRoom.players.length : 0;
-            document.getElementById('playerCount').textContent = `${playerCount}/${currentRoom.maxPlayers}`;
+            document.getElementById('playerCount').textContent = `${currentRoom.players.length}/${currentRoom.maxPlayers}`;
         }
 
         // 更新房间状态
@@ -559,8 +570,7 @@
 
         // 更新玩家数量
         function updatePlayerCount() {
-            const playerCount = currentRoom.players ? currentRoom.players.length : 0;
-            document.getElementById('playerCount').textContent = `${playerCount}/${currentRoom.maxPlayers}`;
+            document.getElementById('playerCount').textContent = `${currentRoom.players.length}/${currentRoom.maxPlayers}`;
         }
 
         // 退出游戏

@@ -97,8 +97,22 @@
             padding: 20px;
             width: 80%;
             max-width: 400px;
+            max-height: 70vh;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #8b7355 #f9f3e6;
+        }
+        .player-info-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .player-info-content::-webkit-scrollbar-track {
+            background: #f9f3e6;
+        }
+        .player-info-content::-webkit-scrollbar-thumb {
+            background-color: #8b7355;
+            border-radius: 4px;
         }
         .close-modal {
             position: absolute;
@@ -110,6 +124,18 @@
         }
         .close-modal:hover {
             color: #6b4f3f;
+        }
+        .player-marker.selected-map {
+            border: 3px solid #ff0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+        .selected-character {
+            transform: scale(1.1);
+            transition: transform 0.3s ease;
+        }
+        .selected-character .border-8b7355 {
+            border-color: #ff0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
         }
     </style>
 </head>
@@ -383,28 +409,121 @@
         const urlParams = new URLSearchParams(window.location.search);
         const roomId = urlParams.get('roomId');
         const mode = urlParams.get('mode');
-        console.log(roomId, mode);
+        const characterId = urlParams.get('characterId');
+        console.log(roomId, mode, characterId);
+
+        // 验证房间和角色信息
+        function validateRoomAndCharacter() {
+            // 检查是否有房间ID
+            if (!roomId) {
+                alert('错误：未提供房间ID');
+                window.location.href = 'launch.html';
+                return false;
+            }
+
+            // 检查是否有角色ID
+            if (!characterId) {
+                alert('错误：未提供角色ID');
+                window.location.href = 'launch.html';
+                return false;
+            }
+
+            // 检查currentRoom是否存在且ID匹配
+            if (!currentRoom || currentRoom.id !== roomId) {
+                alert('错误：房间信息不存在或不匹配');
+                window.location.href = 'launch.html';
+                return false;
+            }
+
+            // 检查角色是否存在
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            if (!selectedCharacter || selectedCharacter.id !== parseInt(characterId)) {
+                alert('错误：角色信息不存在或不匹配');
+                window.location.href = 'launch.html';
+                return false;
+            }
+
+            // 设置当前角色为选中状态
+            selectedCharacter.selected = 1;
+            localStorage.setItem('selectedCharacter', JSON.stringify(selectedCharacter));
+
+            return true;
+        }
+
+        // 在页面加载时进行验证
+        if (!validateRoomAndCharacter()) {
+            // 如果验证失败，页面会重定向到launch.html
+            throw new Error('验证失败');
+        }
 
         // 如果是加入模式，确保房间信息存在
         if (mode === 'join' && roomId) {
             // 获取当前玩家信息
             const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
             if (selectedCharacter) {
-                // 创建新的房间信息
-                currentRoom = {
-                    id: roomId,
-                    mode: 'join',
-                    players: [{
-                        id: selectedCharacter.id,
-                        name: selectedCharacter.name,
-                        avatar: `avatar/${selectedCharacter.id}.jpg`,
-                        description: selectedCharacter.description,
-                        stats: selectedCharacter.stats,
-                        skills: selectedCharacter.skills,
-                        tags: selectedCharacter.tags
-                    }]
-                };
-                localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+                // 获取现有房间信息
+                const existingRoom = JSON.parse(localStorage.getItem('currentRoom'));
+                console.log(existingRoom);
+                
+                // 如果房间已存在，将玩家添加到房间
+                if (existingRoom) {
+                    // 确保players数组存在
+                    if (!existingRoom.players) {
+                        existingRoom.players = [];
+                    }
+                    
+                    // 检查玩家是否已经在房间中
+                    let playerExists = false;
+                    for (let i = 0; i < existingRoom.players.length; i++) {
+                        if (existingRoom.players[i].id === selectedCharacter.id) {
+                            playerExists = true;
+                            break;
+                        }
+                    }
+                    if (!playerExists) {
+                        // 创建玩家数据
+                        const playerData = {
+                            id: selectedCharacter.id,
+                            name: selectedCharacter.name,
+                            avatar: `avatar/${selectedCharacter.id}.jpg`,
+                            description: selectedCharacter.description,
+                            stats: selectedCharacter.stats,
+                            skills: selectedCharacter.skills,
+                            tags: selectedCharacter.tags,
+                            isAI: false
+                        };
+                        
+                        // 添加玩家到房间
+                        existingRoom.players.push(playerData);
+                        localStorage.setItem('currentRoom', JSON.stringify(existingRoom));
+                        
+                        // 更新当前房间数据
+                        currentRoom = existingRoom;
+                        
+                        // 添加系统消息
+                        addSystemMessage(`${selectedCharacter.name} 加入了房间`);
+                    }
+                } else {
+                    // 如果房间不存在，创建新房间
+                    currentRoom = {
+                        id: roomId,
+                        mode: 'join',
+                        players: [{
+                            id: selectedCharacter.id,
+                            name: selectedCharacter.name,
+                            avatar: `avatar/${selectedCharacter.id}.jpg`,
+                            description: selectedCharacter.description,
+                            stats: selectedCharacter.stats,
+                            skills: selectedCharacter.skills,
+                            tags: selectedCharacter.tags,
+                            isAI: false
+                        }]
+                    };
+                    localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+                    
+                    // 添加系统消息
+                    addSystemMessage(`创建了新房间，${selectedCharacter.name} 已加入`);
+                }
             }
         }
 
@@ -981,52 +1100,37 @@
             const turnOrder = document.getElementById('turnOrder');
             turnOrder.innerHTML = '';
 
-            if (gameMode && gameMode.type !== 'single' && currentRoom && currentRoom.players) {
-                // 多人模式：显示所有玩家
-                currentRoom.players.forEach(player => {
-                    const playerElement = document.createElement('div');
-                    playerElement.className = 'flex flex-col items-center';
-                    playerElement.innerHTML = `
-                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-8b7355">
-                            <img src="avatar/${player.id}.jpg" alt="${player.name}" class="w-full h-full object-cover">
-                        </div>
-                        <p class="text-sm vintage-text mt-1">${player.name}</p>
-                    `;
-                    turnOrder.appendChild(playerElement);
-                });
-            } else {
-                // 单人模式：显示当前角色
-                const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
-                if (selectedCharacter) {
-                    const playerElement = document.createElement('div');
-                    playerElement.className = 'flex flex-col items-center';
-                    playerElement.innerHTML = `
-                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-8b7355">
-                            <img src="avatar/${selectedCharacter.id}.jpg" alt="${selectedCharacter.name}" class="w-full h-full object-cover">
-                        </div>
-                        <p class="text-sm vintage-text mt-1">${selectedCharacter.name}</p>
-                    `;
-                    turnOrder.appendChild(playerElement);
+            // 获取房间中的所有玩家
+            const roomPlayers = currentRoom.players || [];
+
+            // 显示所有玩家
+            roomPlayers.forEach(player => {
+                const playerElement = document.createElement('div');
+                playerElement.className = 'flex flex-col items-center';
+                // 如果是当前角色，添加选中样式
+                if (player.id === parseInt(characterId)) {
+                    playerElement.classList.add('selected-character');
                 }
-            }
+                playerElement.innerHTML = `
+                    <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-8b7355">
+                        <img src="${player.avatar}" alt="${player.name}" class="w-full h-full object-cover">
+                    </div>
+                    <p class="text-sm vintage-text mt-1">${player.name}</p>
+                `;
+                turnOrder.appendChild(playerElement);
+            });
         }
 
         // 显示玩家信息
         function showPlayerInfo(playerId) {
             const modal = document.getElementById('playerInfoModal');
             
-            // 只处理多人模式
-            if (!currentRoom || !currentRoom.players) {
-                addSystemMessage('错误：未找到房间或玩家信息');
-                return;
-            }
-            
-            // 从房间玩家列表中获取玩家数据
+            // 从当前房间的玩家列表中获取玩家数据
             const playerData = currentRoom.players.find(p => p.id === playerId);
             
             if (playerData) {
                 // 更新模态框内容
-                document.getElementById('modalPlayerAvatar').src = `avatar/${playerData.id}.jpg`;
+                document.getElementById('modalPlayerAvatar').src = playerData.avatar;
                 document.getElementById('modalPlayerName').textContent = playerData.name;
                 document.getElementById('modalPlayerProfession').textContent = playerData.description;
                 
@@ -1107,9 +1211,134 @@
                 ];
                 const randomLocation = locations[Math.floor(Math.random() * locations.length)];
                 document.getElementById('modalPlayerLocation').textContent = `当前位置：${randomLocation}`;
+
+                // 清除之前的互动按钮
+                const oldInteractionContainer = document.querySelector('.interaction-container');
+                if (oldInteractionContainer) {
+                    oldInteractionContainer.remove();
+                }
+
+                // 添加互动按钮（如果不是当前角色）
+                if (playerData.id !== parseInt(characterId)) {
+                    const interactionContainer = document.createElement('div');
+                    interactionContainer.className = 'interaction-container mt-4 space-y-2';
+                    
+                    // 根据角色类型添加不同的互动选项
+                    const interactions = getCharacterInteractions(playerData);
+                    interactions.forEach(interaction => {
+                        const button = document.createElement('button');
+                        button.className = 'vintage-button w-full py-2 rounded-md';
+                        button.innerHTML = `<i class="${interaction.icon} mr-2"></i>${interaction.text}`;
+                        button.onclick = () => handleCharacterInteraction(playerData, interaction);
+                        interactionContainer.appendChild(button);
+                    });
+                    
+                    // 将互动按钮添加到模态框
+                    const modalContent = document.querySelector('.player-info-content');
+                    modalContent.appendChild(interactionContainer);
+                }
                 
+                // 显示模态框
                 modal.style.display = 'block';
+
+                // 更新地图上的角色标记
+                updateMapMarkers();
             }
+        }
+
+        // 获取角色互动选项
+        function getCharacterInteractions(character) {
+            // 根据角色标签和技能生成互动选项
+            const interactions = [];
+            
+            // 基础互动选项
+            interactions.push({
+                icon: 'fas fa-comments',
+                text: '交谈',
+                type: 'talk'
+            });
+            
+            // 根据角色标签添加特殊互动
+            if (character.tags) {
+                if (character.tags.includes('战士')) {
+                    interactions.push({
+                        icon: 'fas fa-fist-raised',
+                        text: '切磋',
+                        type: 'spar'
+                    });
+                }
+                if (character.tags.includes('法师')) {
+                    interactions.push({
+                        icon: 'fas fa-hat-wizard',
+                        text: '讨论魔法',
+                        type: 'magic'
+                    });
+                }
+                if (character.tags.includes('商人')) {
+                    interactions.push({
+                        icon: 'fas fa-coins',
+                        text: '交易',
+                        type: 'trade'
+                    });
+                }
+                if (character.tags.includes('医生')) {
+                    interactions.push({
+                        icon: 'fas fa-heart',
+                        text: '请求治疗',
+                        type: 'heal'
+                    });
+                }
+            }
+            
+            return interactions;
+        }
+
+        // 处理角色互动
+        function handleCharacterInteraction(character, interaction) {
+            const currentCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            
+            // 根据互动类型生成不同的对话内容
+            const responses = {
+                'talk': [
+                    `${character.name} 很乐意与你交谈。`,
+                    `${character.name} 分享了一些有趣的故事。`,
+                    `${character.name} 似乎对你很感兴趣。`
+                ],
+                'spar': [
+                    `${character.name} 接受了你的切磋请求，你们进行了一场友好的比试。`,
+                    `${character.name} 展示了一些独特的战斗技巧。`,
+                    `与 ${character.name} 的切磋让你学到了新的战斗技巧。`
+                ],
+                'magic': [
+                    `${character.name} 分享了一些魔法知识。`,
+                    `${character.name} 展示了一些神奇的魔法。`,
+                    `你从 ${character.name} 那里学到了一些魔法技巧。`
+                ],
+                'trade': [
+                    `${character.name} 展示了一些商品。`,
+                    `${character.name} 提出了一些交易建议。`,
+                    `你与 ${character.name} 进行了一些物品交换。`
+                ],
+                'heal': [
+                    `${character.name} 为你治疗了伤势。`,
+                    `${character.name} 提供了一些医疗建议。`,
+                    `${character.name} 给了你一些治疗药水。`
+                ]
+            };
+            
+            // 添加互动消息到对话历史
+            addSystemMessage(`${currentCharacter.name} 选择了与 ${character.name} ${interaction.text}...`);
+            
+            // 随机选择一个回应
+            const response = responses[interaction.type][Math.floor(Math.random() * responses[interaction.type].length)];
+            
+            // 延迟显示回应
+            setTimeout(() => {
+                addSystemMessage(response);
+            }, 1000);
+            
+            // 关闭模态框
+            closePlayerInfo();
         }
 
         // 关闭玩家信息
@@ -1131,12 +1360,13 @@
             const mapContainer = document.querySelector('.map-container');
             mapContainer.innerHTML = ''; // 清空现有标记
 
-            if (!currentRoom || !currentRoom.players) {
-                addSystemMessage('错误：未找到房间或玩家信息');
-                return;
-            }
+            // 获取房间中的所有玩家
+            const roomPlayers = currentRoom.players || [];
 
-            // 为每个玩家分配一个随机位置
+            // 获取或创建角色位置信息
+            let characterPositions = JSON.parse(localStorage.getItem('characterPositions')) || {};
+            
+            // 为每个角色分配一个位置（如果还没有位置）
             const positions = [
                 { top: '30%', left: '40%' },
                 { top: '50%', left: '60%' },
@@ -1149,16 +1379,31 @@
             // 随机打乱位置
             const shuffledPositions = [...positions].sort(() => Math.random() - 0.5);
             
-            currentRoom.players.forEach((player, index) => {
-                const position = shuffledPositions[index % positions.length];
+            // 为没有位置的字符分配位置
+            roomPlayers.forEach((player, index) => {
+                if (!characterPositions[player.id]) {
+                    characterPositions[player.id] = shuffledPositions[index % positions.length];
+                }
+            });
+            
+            // 保存位置信息
+            localStorage.setItem('characterPositions', JSON.stringify(characterPositions));
+            
+            // 创建标记
+            roomPlayers.forEach(player => {
+                const position = characterPositions[player.id];
                 const marker = document.createElement('div');
                 marker.className = 'player-marker';
+                // 只在当前角色ID匹配时显示红圈
+                if (player.id === parseInt(characterId)) {
+                    marker.classList.add('selected-map');
+                }
                 marker.style.top = position.top;
                 marker.style.left = position.left;
                 marker.onclick = () => showPlayerInfo(player.id);
                 
                 marker.innerHTML = `
-                    <img src="avatar/${player.id}.jpg" alt="${player.name}">
+                    <img src="${player.avatar}" alt="${player.name}">
                 `;
                 
                 mapContainer.appendChild(marker);
@@ -1172,28 +1417,42 @@
                 return;
             }
 
+            // 获取所有选中的角色
+            const selectedCharacters = JSON.parse(localStorage.getItem('selectedCharacters')) || [];
+            const currentCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+
+            // 如果当前角色不在选中列表中，添加它
+            if (currentCharacter && !selectedCharacters.some(char => char.id === currentCharacter.id)) {
+                selectedCharacters.push(currentCharacter);
+                localStorage.setItem('selectedCharacters', JSON.stringify(selectedCharacters));
+            }
+
             // 确保房间有玩家数据
             if (!currentRoom.players) {
-                const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
-                if (!selectedCharacter) {
-                    addSystemMessage('错误：未选择角色');
-                    return;
-                }
-
-                // 创建初始玩家数据
-                currentRoom.players = [{
-                    id: selectedCharacter.id,
-                    name: selectedCharacter.name,
-                    avatar: `avatar/${selectedCharacter.id}.jpg`,
-                    description: selectedCharacter.description,
-                    stats: selectedCharacter.stats,
-                    skills: selectedCharacter.skills,
-                    tags: selectedCharacter.tags
-                }];
-
-                // 更新当前房间数据
-                localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+                currentRoom.players = [];
             }
+
+            // 将所有选中的角色添加到房间中
+            selectedCharacters.forEach(character => {
+                // 检查角色是否已经在房间中
+                if (!currentRoom.players.some(p => p.id === character.id)) {
+                    const playerData = {
+                        id: character.id,
+                        name: character.name,
+                        avatar: `avatar/${character.id}.jpg`,
+                        description: character.description,
+                        stats: character.stats,
+                        skills: character.skills,
+                        tags: character.tags,
+                        isAI: character.isAI || false
+                    };
+                    currentRoom.players.push(playerData);
+                }
+            });
+
+            // 更新当前房间数据
+            localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+            addSystemMessage(`已将所有选中的角色添加到房间中，当前玩家数：${currentRoom.players.length}`);
         }
 
         // 显示退出房间确认弹窗
@@ -1210,9 +1469,20 @@
 
         // 退出房间
         function exitRoom() {
+            // 清除位置信息
+            localStorage.removeItem('characterPositions');
+
+            // 获取所有选中的角色
+            const selectedCharacters = JSON.parse(localStorage.getItem('selectedCharacters')) || [];
+            // 重置所有角色的地图选中状态
+            selectedCharacters.forEach(character => {
+                character.selectedMap = 0;
+            });
+            localStorage.setItem('selectedCharacters', JSON.stringify(selectedCharacters));
+
             // 清除游戏相关数据
-            localStorage.removeItem('currentRoom');
-            localStorage.removeItem('gameMode');
+            // localStorage.removeItem('currentRoom');
+            // localStorage.removeItem('gameMode');
             
             // 添加退出消息
             addSystemMessage('正在退出房间...');

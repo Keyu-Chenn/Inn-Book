@@ -342,7 +342,7 @@
         function createNewCharacter() {
             // 这里可以跳转到创建角色页面或打开创建对话框
             console.log('创建新角色');
-            // window.location.href = 'create-character.html';
+            window.location.href = 'http://127.0.0.1:5173/character-setting';
         }
 
         // 下一步
@@ -367,7 +367,7 @@
                     // 存储选中的角色信息
                     localStorage.setItem('selectedCharacter', JSON.stringify(selectedCharacter));
                     // 跳转到role-bench页面
-                    window.location.href = `role-bench.html?roomId=${currentRoom.id}&mode=join`;
+                    window.location.href = `role-bench.html?roomId=${currentRoom.id}&mode=join&characterId=${selectedCharacter.id}`;
                 } else {
                     alert('错误：未找到房间信息');
                     return;

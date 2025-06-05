@@ -128,8 +128,8 @@
                         <h1 class="text-2xl font-bold vintage-text">游戏启动</h1>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <button class="vintage-button px-4 py-2 rounded-md">
-                            <i class="fas fa-arrow-left mr-2"></i>返回作品页
+                        <button class="vintage-button px-4 py-2 rounded-md" onclick="returnToRoom()">
+                            <i class="fas fa-arrow-left mr-2"></i>返回房间
                         </button>
                     </div>
                 </div>
@@ -224,6 +224,33 @@
                     <div class="text-center">
                         <button class="vintage-button px-6 py-2 rounded-md" onclick="joinRoom()">
                             确认加入
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 返回房间弹窗 -->
+        <div id="returnRoomModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+            <div class="parchment rounded-lg p-6 max-w-md w-full mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold vintage-text">返回房间</h2>
+                    <button onclick="closeReturnRoomModal()" class="text-4a3728 hover:text-6b4f3f">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium vintage-text mb-2">房间ID</label>
+                        <input type="text" id="returnRoomIdInput" class="vintage-input w-full px-3 py-2 rounded-md" placeholder="输入房间ID">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium vintage-text mb-2">角色ID</label>
+                        <input type="text" id="returnCharacterIdInput" class="vintage-input w-full px-3 py-2 rounded-md" placeholder="输入角色ID">
+                    </div>
+                    <div class="text-center">
+                        <button class="vintage-button px-6 py-2 rounded-md" onclick="returnToRoom()">
+                            确认返回
                         </button>
                     </div>
                 </div>
@@ -569,6 +596,50 @@
             const modal = document.getElementById('joinRoomModal');
             if (event.target == modal) {
                 closeJoinRoomModal();
+            }
+        }
+
+        // 显示返回房间弹窗
+        function showReturnRoomModal() {
+            const modal = document.getElementById('returnRoomModal');
+            modal.classList.remove('hidden');
+        }
+
+        // 关闭返回房间弹窗
+        function closeReturnRoomModal() {
+            const modal = document.getElementById('returnRoomModal');
+            modal.classList.add('hidden');
+        }
+
+        // 返回房间
+        function returnToRoom() {
+            const roomId = document.getElementById('returnRoomIdInput').value.trim();
+            const characterId = document.getElementById('returnCharacterIdInput').value.trim();
+
+            if (!roomId || !characterId) {
+                alert('请输入房间ID和角色ID');
+                return;
+            }
+
+            // 存储房间信息
+            // const roomInfo = {
+            //     id: roomId,
+            //     mode: 'join'
+            // };
+            // localStorage.setItem('currentRoom', JSON.stringify(roomInfo));
+
+            // 跳转到role-bench页面
+            window.location.href = `role-bench.html?roomId=${roomId}&mode=join&characterId=${characterId}`;
+        }
+
+        // 修改返回按钮点击事件
+        document.querySelector('button:has(i.fa-arrow-left)').onclick = showReturnRoomModal;
+
+        // 点击弹窗外部关闭弹窗
+        window.onclick = function(event) {
+            const modal = document.getElementById('returnRoomModal');
+            if (event.target == modal) {
+                closeReturnRoomModal();
             }
         }
 
