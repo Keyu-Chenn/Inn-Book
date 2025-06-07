@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,38 +12,46 @@
             background-image: url('https://www.transparenttextures.com/patterns/old-map.png');
             background-color: #f4e4bc;
         }
+
         .parchment {
             background-color: #f9f3e6;
             background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
             border: 1px solid #d4c4a8;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         .vintage-text {
             color: #4a3728;
             font-family: 'Times New Roman', Times, serif;
         }
+
         .vintage-button {
             background-color: #8b7355;
             color: #f9f3e6;
             border: 1px solid #6b4f3f;
             transition: all 0.3s ease;
         }
+
         .vintage-button:hover {
             background-color: #6b4f3f;
             transform: translateY(-1px);
         }
+
         .vintage-input {
             background-color: #fff9f0;
             border: 1px solid #d4c4a8;
             color: #4a3728;
         }
+
         .vintage-input:focus {
             border-color: #8b7355;
             box-shadow: 0 0 0 2px rgba(139, 115, 85, 0.2);
         }
+
         .step-indicator {
             position: relative;
         }
+
         .step-indicator::after {
             content: '';
             position: absolute;
@@ -53,21 +62,25 @@
             background-color: #d4c4a8;
             z-index: 0;
         }
+
         .step {
             position: relative;
             z-index: 1;
             background-color: #f4e4bc;
         }
+
         .step.active {
             background-color: #8b7355;
             color: #f9f3e6;
         }
+
         .step.completed {
             background-color: #6b4f3f;
             color: #f9f3e6;
         }
     </style>
 </head>
+
 <body>
     <div class="min-h-screen">
         <!-- 顶部导航栏 -->
@@ -78,7 +91,8 @@
                         <h1 class="text-2xl font-bold vintage-text">创建房间</h1>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <button class="vintage-button px-4 py-2 rounded-md" onclick="window.location.href='world-selection.html'">
+                        <button class="vintage-button px-4 py-2 rounded-md"
+                            onclick="window.location.href='world-selection.html'">
                             <i class="fas fa-arrow-left mr-2"></i>返回
                         </button>
                     </div>
@@ -89,10 +103,12 @@
         <!-- 步骤指示器 -->
         <div class="max-w-7xl mx-auto px-4 py-6">
             <div class="step-indicator flex justify-between mb-8">
-                <div class="step completed flex items-center justify-center w-12 h-12 rounded-full border-2 border-8b7355">
+                <div
+                    class="step completed flex items-center justify-center w-12 h-12 rounded-full border-2 border-8b7355">
                     <i class="fas fa-gamepad"></i>
                 </div>
-                <div class="step completed flex items-center justify-center w-12 h-12 rounded-full border-2 border-8b7355">
+                <div
+                    class="step completed flex items-center justify-center w-12 h-12 rounded-full border-2 border-8b7355">
                     <i class="fas fa-globe"></i>
                 </div>
                 <div class="step active flex items-center justify-center w-12 h-12 rounded-full border-2 border-8b7355">
@@ -122,11 +138,13 @@
                 <div class="space-y-6">
                     <div>
                         <label class="block text-sm font-medium vintage-text mb-2">房间名称</label>
-                        <input type="text" id="roomName" class="vintage-input w-full px-3 py-2 rounded-md" placeholder="输入房间名称">
+                        <input type="text" id="roomName" class="vintage-input w-full px-3 py-2 rounded-md"
+                            placeholder="输入房间名称">
                     </div>
                     <div>
                         <label class="block text-sm font-medium vintage-text mb-2">房间密码（可选）</label>
-                        <input type="password" id="roomPassword" class="vintage-input w-full px-3 py-2 rounded-md" placeholder="输入房间密码">
+                        <input type="password" id="roomPassword" class="vintage-input w-full px-3 py-2 rounded-md"
+                            placeholder="输入房间密码">
                     </div>
                     <div>
                         <label class="block text-sm font-medium vintage-text mb-2">最大玩家数</label>
@@ -209,11 +227,11 @@
             localStorage.setItem('currentRoom', JSON.stringify(roomData));
 
             // 跳转到GM-bench页面
-            window.location.href = 'gm-bench.html';
+            window.location.href = 'GM-bench.html';
         }
 
         // 页面加载时初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // 从localStorage获取选中的世界观
             const selectedWorld = JSON.parse(localStorage.getItem('selectedWorld'));
             if (selectedWorld) {
@@ -223,4 +241,5 @@
         });
     </script>
 </body>
+
 </html>
