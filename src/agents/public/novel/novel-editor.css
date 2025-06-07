@@ -1,0 +1,283 @@
+        :root {
+            --parchment-light: #f5f0e1; --parchment-medium: #e6dcbf; --parchment-dark: #d4c8a8;
+            --ink-light: #5a4a3f; --ink-dark: #2c1e18; --accent-gold: #c19a49; --accent-red: #8c3a2b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Serif SC', 'Microsoft YaHei', serif; }
+        body { background-color: var(--parchment-dark); /* Darker background for editor focus */ color: var(--ink-dark); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
+        .container-fluid { width: 100%; padding: 0; } /* Full width for editor layout */
+        .editor-container { max-width: 1400px; margin:0 auto; padding: 0 20px;} /* Content constrained within full-width */
+        
+        header { background-color: var(--ink-dark); /* Darker header for editor */ box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; color: var(--parchment-light); }
+        nav.editor-nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; height: 60px;}
+        .editor-nav .logo-area { display: flex; align-items: center; }
+        .editor-nav .logo-area svg { height: 30px; width: 30px; margin-right: 8px; fill: var(--parchment-light); }
+        .editor-nav .logo-area h1 { font-size: 20px; color: var(--parchment-light); font-weight: bold; }
+        .editor-nav .document-title-area { flex-grow: 1; text-align: center; }
+        .editor-nav .document-title-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--parchment-medium);
+            color: var(--parchment-light);
+            font-size: 18px;
+            font-weight: 500;
+            padding: 5px 10px;
+            text-align: center;
+            max-width: 400px;
+        }
+        .editor-nav .document-title-input:focus { outline: none; border-bottom-color: var(--accent-gold); }
+        
+        .editor-nav .actions-area { display: flex; align-items: center; gap: 15px; }
+        .editor-nav .btn-editor {
+            background-color: var(--accent-gold); color: var(--parchment-light); border: none;
+            padding: 8px 18px; font-size: 14px; border-radius:4px; text-decoration:none; cursor:pointer; transition: background-color 0.3s; font-weight:500;
+        }
+        .editor-nav .btn-editor:hover { background-color: #a88035; }
+        .btn-editor {
+            background-color: var(--accent-gold); color: var(--parchment-light); border: none;
+            padding: 8px 18px; font-size: 14px; border-radius:4px; text-decoration:none; cursor:pointer; transition: background-color 0.3s; font-weight:500;
+        }
+        .btn-editor:hover { background-color: #a88035; }
+        .editor-nav .btn-editor-outline {
+            background: transparent; border: 1px solid var(--parchment-light); color: var(--parchment-light);
+        }
+        .editor-nav .btn-editor-outline:hover { background-color: var(--parchment-light); color: var(--ink-dark); }
+        .editor-nav .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            padding: 8px;
+            margin: 0 4px;
+            color: var(--parchment-light);
+            transition: background-color 0.3s;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .editor-nav .btn-icon:hover {
+            background-color: var(--parchment-medium);
+        }
+        /* 控制 SVG 大小和颜色 */
+        .editor-nav .btn-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+        }
+        /* 各按钮 hover 时高亮图标 */
+        .editor-nav .btn-save:hover,
+        .editor-nav .btn-export:hover {
+            color: var(--accent-gold);
+        }
+
+        .editor-nav .user-info { display: flex; align-items: center; gap: 10px; }
+        .editor-nav .avatar { width: 36px; height: 36px; border-radius: 50%; background-color: var(--parchment-medium); display: flex; justify-content: center; align-items: center; border: 1px solid var(--accent-gold); overflow: hidden; cursor: pointer; }
+        .editor-nav .avatar a { display: flex; width:100%; height:100%; align-items:center; justify-content:center;}
+        .editor-nav .avatar svg { stroke: var(--ink-dark); width:20px; height:20px; }
+        
+
+        .editor-layout { display: flex; flex-grow: 1; background-color: var(--parchment-light); margin-top: 1px; /* Prevent overlap with sticky header */ }
+        
+        .sidebar-panel { /* For chapters, outline, AI tools */
+            width: 280px;
+            background-color: var(--parchment-medium);
+            padding: 20px;
+            border-right: 1px solid var(--parchment-dark);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-panel h3 {
+            font-size: 18px; color: var(--ink-dark); margin-bottom: 15px; padding-bottom: 10px;
+            border-bottom: 1px solid var(--parchment-dark);
+        }
+        .sidebar-panel .chapter-list.scrollable-list {
+        max-height: calc((60px + 5px) * 3); /* 60px item height + 5px margin */
+        overflow-y: auto;
+        padding-right: 10px;
+        }
+        .sidebar-panel .chapter-list.scrollable-list::-webkit-scrollbar {
+        width: 6px;
+        }
+        .sidebar-panel .chapter-list.scrollable-list::-webkit-scrollbar-thumb {
+        background: var(--parchment-dark);
+        border-radius: 3px;
+        }
+        .sidebar-panel .chapter-list.scrollable-list li {
+        margin-bottom: 5px;
+        }
+        .chapter-list { list-style: none; margin-bottom: 25px; }
+        .chapter-list li a {
+            display: block; padding: 10px 15px; text-decoration: none; color: var(--ink-light);
+            border-radius: 4px; margin-bottom: 5px; transition: background-color 0.3s, color 0.3s;
+        }
+        .chapter-list li a:hover { background-color: var(--parchment-dark); color: var(--ink-dark); }
+        .chapter-list li a.active { background-color: var(--accent-gold); color: var(--parchment-light); font-weight: 500; }
+        .btn-add-chapter {
+            display: block; width: 100%; text-align: center; padding: 10px;
+            background-color: var(--ink-light); color: var(--parchment-light);
+            border:none; border-radius:4px; cursor:pointer; transition: background-color 0.3s; font-size:14px; margin-bottom: 20px;
+            text-decoration: none;
+        }
+        .btn-add-chapter:hover { background-color: var(--ink-dark); }
+
+        /* 角色列表 */
+    .character-list {
+      list-style: none;
+      max-height: calc((48px + 8px) * 4);
+      overflow-y: auto;
+      padding: 0;
+      margin: 0;
+    }
+    .character-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--parchment-light);
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      cursor: grab;
+    }
+    .character-list li.dragging { opacity: 0.5; }
+    .char-icon { flex-shrink: 0; width: 32px; height: 32px; color: var(--ink-dark); }
+    .character-list li span { font-size: 14px; font-weight: 500; color: var(--ink-dark); }
+    .character-list::-webkit-scrollbar { width: 6px; }
+    .character-list::-webkit-scrollbar-thumb { background: var(--ink-dark); border-radius: 3px; }
+
+    /* 场景列表 */
+    .scenes-wrapper { padding: 0 20px; }
+    .scenes-wrapper h3 { font-size: 20px; margin: 16px 0; color: var(--ink-dark); font-weight: 600; }
+    .scenes-columns {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 20px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 20px 8px;
+      width: 100%; max-width: 860px; margin: 20px auto;
+      display: flex;
+    }
+    .scenes-columns::-webkit-scrollbar { height: 6px; }
+    .scenes-columns::-webkit-scrollbar-thumb { background: var(--parchment-dark); border-radius: 3px; }
+    .scenes-columns::-webkit-scrollbar-track { background: var(--parchment-light); }
+    .scenes-column { display: flex; flex-direction: column; gap: 20px; }
+    .scene-mode { border: 2px dashed transparent; padding: 4px; border-radius: 6px; }
+    .scene-mode.drag-over { border-color: var(--accent-gold); }
+    .scene-arrow { flex-shrink: 0; width: 32px; height: 32px; margin: auto 10px;
+      background-color: var(--parchment-light); border: 2px solid var(--accent-gold);
+      border-radius: 50%; display:flex; align-items:center; justify-content:center;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    }
+    .scene-arrow svg { width:16px; height:16px; stroke:var(--accent-gold); stroke-width:2; fill:none; }
+    
+    /* 场景卡片 */
+    .scene-card { position: relative;
+      background: #fff; border-left: 4px solid var(--accent-gold);
+      border-radius: 8px; padding: 16px; box-shadow:0 4px 12px rgba(0,0,0,0.08);
+      display:flex; flex-direction:column; justify-content:space-between;
+      transition: transform 0.2s, box-shadow 0.2s;
+      flex:0 0 240px; width:240px; min-height:200px;
+    }
+    .scene-card:hover { transform: translateY(-6px); box-shadow:0 6px 18px rgba(0,0,0,0.12); }
+    .scene-card .edit-icon {
+      position:absolute; top:8px; right:8px; width:20px; height:20px; cursor:pointer;
+      opacity:0.6; transition:opacity 0.2s;
+    }
+    .scene-card .edit-icon:hover { opacity:1; }
+    .scene-num { font-size:13px; color:var(--accent-red); margin-bottom:8px; }
+    .scene-title { font-size:17px; font-weight:700; color:var(--ink-dark); margin:0 0 8px; }
+    .scene-desc { font-size:14px; color:var(--ink-light); flex-grow:1; line-height:1.5; margin:0 0 12px;
+      overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;
+    }
+    .scene-roles { font-size:12px; color:var(--ink-dark); margin-bottom:6px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .scene-meta { font-size:11px; color:var(--ink-medium); text-align:right;
+      border-top:1px dashed var(--parchment-dark); padding-top:8px;
+    }
+
+        .ai-tools-panel { margin-top: auto; /* Push AI tools to bottom of sidebar if content is short */ }
+        .ai-tools-panel .btn-ai-tool {
+            display: block; width: 100%; text-align: left; padding: 12px 15px;
+            background-color: var(--parchment-light); color: var(--ink-dark);
+            border:1px solid var(--parchment-dark); border-radius:4px; cursor:pointer; 
+            transition: background-color 0.3s, border-color 0.3s; font-size:14px; margin-bottom: 8px;
+            display: flex; align-items: center;
+        }
+        .ai-tools-panel .btn-ai-tool svg { width: 18px; height:18px; margin-right:10px; stroke:var(--ink-light);}
+        .ai-tools-panel .btn-ai-tool:hover { background-color: var(--parchment-dark); border-color:var(--accent-gold);}
+
+
+        .main-editor-area {
+            flex-grow: 1;
+            padding: 30px 40px; /* Padding around the "paper" */
+            display: flex;
+            justify-content: center; /* Center the "paper" */
+            overflow-y: auto;
+        }
+        .editor-paper {
+            width: 100%;
+            max-width: 800px; /* Typical document width */
+            background-color: #fff; /* White paper */
+            padding: 50px 60px; /* Generous padding like a real page */
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            border: 1px solid #ccc;
+            min-height: calc(100vh - 60px - 60px); /* Full height minus header and some padding */
+        }
+        .editor-textarea {
+            width: 100%;
+            height: 100%; /* Fill the paper */
+            min-height: 70vh; /* Ensure it's tall enough */
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: 'Songti SC', 'SimSun', serif; /* Classic Chinese reading font */
+            font-size: 18px; /* Comfortable reading size */
+            line-height: 2; /* Double-spaced for readability */
+            color: #333;
+        }
+        
+        .editor-toolbar { /* Placeholder for actual toolbar */
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--parchment-dark);
+            display: flex;
+            gap: 10px;
+        }
+        .toolbar-button {
+            background: var(--parchment-medium); border: 1px solid var(--parchment-dark);
+            padding: 8px; border-radius: 4px; cursor: pointer;
+        }
+        .toolbar-button svg { width: 18px; height: 18px; vertical-align: middle; fill: var(--ink-light); }
+
+
+        /* No footer in editor view for distraction-free writing */
+        
+        @media (max-width: 1024px) {
+            .sidebar-panel { width: 240px; }
+            .main-editor-area { padding: 20px; }
+            .editor-paper { padding: 30px 40px; }
+        }
+        @media (max-width: 768px) {
+            .editor-layout { flex-direction: column; }
+            .sidebar-panel {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--parchment-dark);
+                max-height: 300px; /* Limit height when stacked */
+                padding: 15px;
+            }
+            .sidebar-panel h3 {font-size:16px; margin-bottom:10px;}
+            .chapter-list li a {padding: 8px 10px; font-size:14px;}
+            .btn-add-chapter {padding:8px; font-size:13px;}
+            .ai-tools-panel .btn-ai-tool {padding:10px 12px; font-size:13px;}
+
+            .main-editor-area { padding: 15px; }
+            .editor-paper { padding: 20px; min-height: calc(100vh - 60px - 300px - 30px); /* Adjust for stacked sidebar */ }
+            .editor-textarea { font-size: 16px; line-height: 1.8;}
+            .editor-nav .document-title-input { max-width: 200px; font-size:16px; }
+            .editor-nav .btn-editor { padding: 6px 12px; font-size: 13px;}
+            .editor-nav .logo-area h1 { display:none; /* Hide title on small screens for space */}
+        }

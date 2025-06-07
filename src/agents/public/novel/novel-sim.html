@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inn Book - 小说演绎</title>
+  <link rel="stylesheet" href="novel-editor.css" />
+  <style>
+    :root {
+      scrollbar-color: var(--parchment-dark) var(--parchment-light);
+      scrollbar-width: thin;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--parchment-light);
+      font-family: 'Noto Serif SC', serif;
+    }
+
+    .interaction-wrapper {
+      grid-area: interaction;
+      height: 86vh;
+      width: 100%;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      border-radius: 16px;
+      background: var(--parchment-medium);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .avatar-strip {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 12px 16px;
+      background: var(--parchment-dark);
+      border-bottom: 1px solid var(--parchment-medium);
+    }
+
+    .avatar-strip .avatar-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 13px;
+      color: var(--ink-dark);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .avatar-strip .avatar-item:hover {
+      transform: scale(1.05);
+    }
+
+    .avatar-item.selected {
+      font-weight: bold;
+      color: var(--accent-gold);
+    }
+
+    .avatar-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid var(--accent-gold);
+      background: var(--parchment-light);
+      transition: transform 0.2s;
+    }
+
+    .avatar-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-icon.selected {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 2px var(--accent-gold);
+    }
+
+    .interaction-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: var(--parchment-light);
+    }
+
+    .chat-message {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 20px;
+      max-width: 85%;
+    }
+
+    .chat-message.self {
+      margin-left: auto;
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+
+    .chat-message.other {
+      margin-right: auto;
+      text-align: left;
+    }
+
+    .chat-message .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .chat-message .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .chat-message .bubble {
+      background: #fff;
+      padding: 10px 16px;
+      border-radius: 12px;
+      color: var(--ink-dark);
+      text-align: left;
+    }
+
+    .chat-message.other .bubble {
+      background: #eee3cc;
+    }
+
+    .chat-message .from {
+      font-weight: bold;
+      color: var(--accent-gold);
+      margin-bottom: 6px;
+    }
+
+    .text-line {
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--ink-dark);
+      margin: 8px 0 16px 0;
+    }
+
+    .text-line .from {
+      font-weight: bold;
+      color: var(--accent-gold);
+    }
+
+    .chat-input-wrapper {
+      padding: 12px 16px;
+      background: var(--parchment-dark);
+      border-top: 1px solid var(--parchment-medium);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chat-input-wrapper .btn-editor-outline {
+      background: transparent;
+      border: 1px solid var(--accent-gold);
+      color: var(--accent-gold);
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .chat-input-wrapper .btn-editor-outline:hover,
+    .chat-input-wrapper .btn-primary {
+      background: var(--accent-gold);
+      color: #fff;
+    }
+
+    .chat-input-wrapper select,
+    .chat-input-wrapper input[type="text"] {
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--parchment-dark);
+      background: #fff;
+      color: var(--ink-dark);
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .chat-input-row input[type="text"] {
+      flex: 1;
+    }
+
+    .chat-input-row button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: var(--accent-gold);
+      color: white;
+      cursor: pointer;
+    }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr 280px;
+      grid-template-rows: 200px 1fr;
+      grid-template-areas:
+        "map interaction sidebar"
+        "role interaction sidebar";
+      gap: 20px;
+      padding: 24px;
+      justify-content: center;
+    }
+
+    .map-area {
+      grid-area: map;
+      background: var(--parchment-light);
+      border: 1px solid var(--parchment-dark);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .map-area .map-container {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .map-area .map-inner {
+      width: 100%;
+      height: 100%;
+      background: url('map/1.jpg') center center no-repeat;
+      background-size: cover;
+      transform-origin: 0 0;
+      transition: transform 0.2s ease;
+    }
+
+    .role-detail-area {
+      grid-area: role;
+      background: var(--parchment-medium);
+      border: 1px solid var(--parchment-dark);
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 14px;
+      color: var(--ink-dark);
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+      max-height: 56vh;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .role-detail-area .role-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    .role-detail-area .role-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent-gold);
+    }
+
+    .role-detail-area .role-name {
+      font-size: 18px;
+      color: var(--accent-gold);
+      margin: 0;
+    }
+
+    .role-detail-area h4 {
+      font-size: 15px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+      padding-bottom: 3px;
+      border-bottom: 1px dashed var(--accent-gold);
+      color: var(--accent-gold);
+      font-weight: 600;
+    }
+
+    .role-detail-area p,
+    .role-detail-area ul li {
+      list-style: none;
+      /* 取消默认圆点 */
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--ink-dark);
+      margin-bottom: 6px;
+      text-indent: 1em;
+    }
+
+    .role-detail-area li {
+      position: relative;
+      border-left: 3px solid var(--accent-gold);
+      background: rgba(255, 255, 255, 0.25);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .role-detail-area ul {
+      margin: 0 0 8px 0;
+    }
+
+    .sidebar-area {
+      grid-area: sidebar;
+      background: var(--parchment-medium);
+      border-left: 1px solid var(--parchment-dark);
+      padding: 16px;
+      font-size: 14px;
+      color: var(--ink-dark);
+      border-radius: 8px;
+      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-area h4 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: var(--accent-gold);
+    }
+
+    .sidebar-area select,
+    .sidebar-area button,
+    .sidebar-area input[type="checkbox"] {
+      margin-top: 6px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--parchment-dark);
+      background: #fff;
+      color: var(--ink-dark);
+    }
+
+    .sidebar-area select {
+      background: var(--parchment-light);
+      color: var(--ink-dark);
+      border: 1px solid var(--accent-gold);
+      padding: 6px 10px;
+      margin-right: 6px;
+      width: 100%;
+      border-radius: 6px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-area button.btn-editor-outline {
+      border: 1px solid var(--accent-gold);
+      background: transparent;
+      color: var(--ink-dark);
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .sidebar-area button.btn-editor-outline:hover {
+      background: var(--accent-gold);
+      color: white;
+    }
+
+    .sidebar-area label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: normal;
+    }
+
+    .sidebar-area strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink-dark);
+      font-weight: bold;
+    }
+
+    .sidebar-area .blk {
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 8px;
+      padding: 8px 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <nav class="editor-nav editor-container">
+      <div class="logo-area">
+        <a href="novel-detail.html" title="返回作品详细" style="display: flex; align-items: center; text-decoration: none;">
+          <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          <h1>Inn Book 小说演绎</h1>
+        </a>
+      </div>
+      <div class="document-title-area">
+        <input class="document-title-input" value="《艾尔登法环：群星下的征途》" />
+      </div>
+      <div class="actions-area">
+        <a href="novel-tree-demo.html">
+          <button class="btn-editor btn-editor-outline" title="回到情景模式">情景模式</button>
+        </a>
+        <button class="btn-icon btn-save" title="保存">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+            <polyline points="17 21 17 13 7 13 7 21" />
+            <polyline points="7 3 7 8 15 8" />
+          </svg>
+        </button>
+        <!-- <button class="btn-icon btn-export" title="导出">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </button> -->
+        <div class="user-info">
+          <a href="../dashboard-overview.html" class="avatar">
+            <svg viewBox="0 0 24 24" stroke-width="1.5" fill="none">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="main-layout">
+    <div class="map-area">
+      <div
+        style="display: flex; align-items: center; gap: 12px; margin-bottom: 0px; padding: 8px 12px; border-radius: 12px; background: var(--parchment-light); box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.05);">
+        <img src="avatar/0.jpg"
+          style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-gold);">
+        <span style="font-weight: bold; font-size: 15px; color: var(--ink-dark);">艾尔登法环 · 世界观</span>
+      </div>
+      <div class="map-container">
+        <div class="map-inner" id="mapInner"></div>
+      </div>
+    </div>
+
+    <div class="role-detail-area" id="roleDetail"></div>
+
+    <div class="interaction-wrapper">
+      <div class="avatar-strip">
+        <div class="avatar-item" data-name="世界">
+          <div class="avatar-icon"><img src="avatar/0.jpg"></div>
+          <div>世界</div>
+        </div>
+        <div class="avatar-item selected">
+          <div class="avatar-icon selected"><img src="avatar/1.jpg"></div>
+          <div>褪色者</div>
+        </div>
+        <div class="avatar-item">
+          <div class="avatar-icon"><img src="avatar/2.jpg"></div>
+          <div>梅琳娜</div>
+        </div>
+        <div class="avatar-item">
+          <div class="avatar-icon"><img src="avatar/3.jpg"></div>
+          <div>菈妮</div>
+        </div>
+        <div class="avatar-item">
+          <div class="avatar-icon"><img src="avatar/4.jpg"></div>
+          <div>布莱泽</div>
+        </div>
+        <div class="avatar-item">
+          <div class="avatar-icon"><img src="avatar/5.jpg"></div>
+          <div>米莉森</div>
+        </div>
+        <div class="avatar-item">
+          <div class="avatar-icon"><img src="avatar/6.jpg"></div>
+          <div>玛莲妮亚</div>
+        </div>
+      </div>
+      <div id="interactionArea" class="interaction-area"></div>
+      <div class="chat-input-wrapper">
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-editor-outline" onclick="selectType('dialogue')" id="btn-dialogue">对话</button>
+          <button class="btn-editor-outline" onclick="selectType('thought')" id="btn-thought">内心</button>
+          <button class="btn-editor-outline" onclick="selectType('action')" id="btn-action">行动</button>
+        </div>
+        <div class="chat-input-row">
+          <select id="dialogueTarget" style="display: none; min-width: 120px;"></select>
+          <input type="text" placeholder="等待你去发现..." id="chatInput" />
+          <button>发送</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-area">
+      <h4>创作者控制台</h4>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
+        <div class="blk">
+          <strong>当前章节与场景</strong>
+          <select id="chapterSelect">
+            <option>第一章：巨龙的苏醒</option>
+            <option>第二章：灵庙暗潮</option>
+            <option>第三章：神祇哀鸣</option>
+          </select>
+          <select id="sceneSelect">
+            <option>场景一：火堆边</option>
+            <option>场景二：废墟之路</option>
+            <option>场景三：秘仪塔楼</option>
+          </select>
+        </div>
+        <div class="blk">
+          <strong>演绎模式</strong>
+          <button class="btn-editor-outline" onclick="toggleSimMode()" id="simModeBtn">自动模式</button>
+          <button class="btn-editor-outline" onclick="toggleSimulation()" id="toggleSimBtn">继续演绎</button>
+          <button class="btn-editor-outline" onclick="restartSimulation(1)">局部重演</button>
+          <button class="btn-editor-outline" onclick="restartSimulation()">全局重演</button>
+        </div>
+        <div class="blk">
+          <strong>状态引导</strong>
+          <button class="btn-editor-outline" onclick="toggleRoleEditMode()" id="roleEditBtn">编辑当前状态</button>
+          <button class="btn-editor-outline" onclick="addGuidance()">剧情走向引导</button>
+        </div>
+        <div class="blk">
+          <strong>导入导出</strong>
+          <input type="file" id="importFile" accept="application/json" style="display:none"
+            onchange="importDialogueFile(event)" />
+          <button class="btn-editor-outline" onclick="document.getElementById('importFile').click()">导入 JSON</button>
+          <button class="btn-editor-outline" onclick="exportFile('json')">导出 JSON</button>
+          <button class="btn-editor-outline" onclick="exportFile('script')">生成剧本</button>
+          <button class="btn-editor-outline" onclick="exportFile('novel')">生成小说</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const mapInner = document.getElementById('mapInner');
+    let scale = 1;
+    let translateX = 0, translateY = 0;
+    let isPanning = false;
+    let startX, startY;
+
+    function updateMapTransform() {
+      mapInner.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+    }
+
+    mapInner.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      scale = Math.min(Math.max(0.5, scale + delta), 3);
+      updateMapTransform();
+    });
+
+    mapInner.addEventListener('mousedown', (e) => {
+      isPanning = true;
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+    document.addEventListener('mouseup', () => isPanning = false);
+    document.addEventListener('mousemove', (e) => {
+      if (!isPanning) return;
+      translateX += (e.clientX - startX) / scale;
+      translateY += (e.clientY - startY) / scale;
+      startX = e.clientX;
+      startY = e.clientY;
+      updateMapTransform();
+    });
+
+    let roleEditMode = false;
+    function toggleRoleEditMode() {
+      roleEditMode = !roleEditMode;
+      const roleDetail = document.getElementById('roleDetail');
+      if (!roleDetail) return;
+      const editable = roleDetail.getAttribute('contenteditable') === 'true';
+      roleDetail.setAttribute('contenteditable', !editable);
+      roleDetail.style.background = editable ? '' : 'rgba(255,255,255,0.5)';
+      roleDetail.style.border = editable ? '' : '1px dashed var(--accent-gold)';
+
+      const btn = document.getElementById('roleEditBtn');
+      if (btn) btn.textContent = roleEditMode ? '完成状态编辑' : '编辑当前状态';
+    }
+  </script>
+
+  <script type="application/json" id="role-data">
+{
+  "世界": {
+    "avatar": "avatar/0.jpg",
+    "name": "艾尔登法环 · 世界",
+    "basic": "黄金树的时代正在崩塌，旧神退却，新秩序尚未确立。交界地是一块支离破碎却仍充满希望的土地，各种势力在此交错，角色的每一次行动都可能撼动世界格局。",
+    "attributes": ["星辰错位", "黄金律法破碎", "神明陨落", "腐败蔓延", "火焰低鸣"],
+    "events": ["月光陨落，星空出现空洞，菈妮的命运被撕裂", "腐败根源突破米凯拉梦境之境，米莉森灵魂震荡", "黄金树之光黯淡，玛莉卡意志退化为残片", "远古巨龙复苏，燃烧之海侵袭巨人山顶"],
+    "status": "当前世界处于失衡边缘。群星的轨道已经开始反转，原本沉寂的神祇重新苏醒。火焰与腐败力量在地底交汇，而凡人与半神的冲突日益加剧。因褪色者等角色的决策，世界的命运正在逐步展开为数个相互矛盾的未来。"
+  },
+  "褪色者": {
+    "avatar": "avatar/1.jpg",
+    "name": "褪色者",
+    "basic": "褪色者曾是无名之流浪骑士，因失去恩惠被流放，如今在交界地中寻求命运的回应。",
+    "attributes": ["力量：18", "敏捷：14", "信仰：10", "生命值：900"],
+    "items": ["裂焰大剑", "流浪护符", "火把", "龙心（已腐化）"],
+    "status": "他筋疲力尽但仍保持清醒，右肩曾受诅咒腐蚀，行走间隐隐作痛；精神略显动摇，但仍坚定向黄金树之路迈进。"
+  },
+  "梅琳娜": {
+    "avatar": "avatar/2.jpg",
+    "name": "梅琳娜",
+    "basic": "梅琳娜是引导褪色者点燃黄金树的神秘少女，身上背负着火焰的宿命。",
+    "attributes": ["力量：10", "敏捷：12", "信仰：20", "生命值：700"],
+    "items": ["圣焰残印", "黑布披风"],
+    "status": "内心平静却燃烧着隐秘火焰，身体因契约而逐渐虚弱。忠诚坚定，对褪色者抱有复杂情感。"
+  },
+  "菈妮": {
+    "avatar": "avatar/3.jpg",
+    "name": "菈妮",
+    "basic": "菈妮，冰冷而孤独的魔女，操控星辰秘术，寻求摆脱命运的束缚。",
+    "attributes": ["智力：24", "敏捷：13", "信仰：15", "生命值：600"],
+    "items": ["星之秘仪", "月光大剑", "古老手札"],
+    "status": "外表冷静自持，实则内心挣扎于人性与神性的裂缝之中，对褪色者抱有模糊的牵绊。"
+  },
+  "布莱泽": {
+    "avatar": "avatar/4.jpg",
+    "name": "布莱泽",
+    "basic": "布莱泽为半狼骑士，是菈妮最忠诚的守卫者，誓死捍卫其主人意志。",
+    "attributes": ["力量：22", "敏捷：16", "生命值：1100"],
+    "items": ["巨型狩猎弓", "狼甲", "主仆誓印"],
+    "status": "身体健壮但精神日益躁动，在守护与自我之间挣扎，曾多次私下质疑星辰命运。"
+  },
+  "米莉森": {
+    "avatar": "avatar/5.jpg",
+    "name": "米莉森",
+    "basic": "米莉森为玛莲妮亚之裔，虽继承腐败之力，却走上反抗命运之路。",
+    "attributes": ["敏捷：20", "信仰：16", "腐败抗性：50", "生命值：850"],
+    "items": ["红痕之刃", "腐败结晶", "古战场饰片"],
+    "status": "身躯遭受永腐折磨，内心充满自我否定与超越欲望，是悲悯与刚毅的化身。"
+  },
+  "玛莲妮亚": {
+    "avatar": "avatar/6.jpg",
+    "name": "玛莲妮亚",
+    "basic": "玛莲妮亚，猩红腐败之女神，以战斗为信仰，其美丽与毁灭同行。",
+    "attributes": ["力量：23", "敏捷：22", "腐败抗性：90", "生命值：1200"],
+    "items": ["米凯拉的圣枝", "腐花之翼", "瘟疫戒指"],
+    "status": "几近神祇的存在，肉体虽残破，却拥有无尽意志，其灵魂深处仍藏悲悯痕迹。"
+  }
+}
+</script>
+
+  <script type="application/json" id="dialogue-data">
+[
+  { "type": "event", "actor": "世界", "content": "星辰开始错位，黄金树微微颤动，古老的预兆再一次浮现。裂痕出现在灵庙之中，无数未被纪念的灵魂躁动不安。" },
+  { "type": "action", "actor": "褪色者", "content": "褪色者缓缓跨过‘断裂之门’，将破碎的狼盾背在身后，迈向月光废墟的中心。" },
+  { "type": "thought", "actor": "褪色者", "content": "所有神祇都沉默了，只有命运仍在呼喊。梅琳娜，你的火焰，还能指引我吗？" },
+  { "type": "dialogue", "actor": "褪色者", "target": "梅琳娜", "content": "这场战斗……也许我不会赢。但若我倒下，你会继续走完这条路吗？" },
+  { "type": "action", "actor": "梅琳娜", "content": "梅琳娜将手搭在褪色者的肩上，圣焰在掌心闪现，为他驱散肩上的腐朽。" },
+  { "type": "thought", "actor": "梅琳娜", "content": "你终究要独自面对那些毁灭与执念。但我会成为你身后的火，直到灰烬燃尽。" },
+  { "type": "dialogue", "actor": "梅琳娜", "target": "褪色者", "content": "你不孤单。哪怕走入无光之地，我也会与你同行，直到你成为‘黄金之王’。" },
+  { "type": "action", "actor": "菈妮", "content": "菈妮凝视天穹，举起秘仪星盘，召唤出群星轨迹之力，笼罩着整片废墟。" },
+  { "type": "thought", "actor": "菈妮", "content": "星辰的轨迹早已决定一切。但你让我怀疑……人是否真的可以违抗天命。" },
+  { "type": "dialogue", "actor": "菈妮", "target": "褪色者", "content": "若你愿追随群星之路，我会将秘仪之钥赠与你。但代价……是忘却你的凡身。" },
+  { "type": "action", "actor": "布莱泽", "content": "布莱泽猛地跃上巨石，一箭射穿空中徘徊的腐化灵体，咆哮声在山谷回荡。" },
+  { "type": "thought", "actor": "布莱泽", "content": "守护菈妮……这已是我存在的全部意义。若有人敢触碰她，我便化作杀戮之风。" },
+  { "type": "dialogue", "actor": "布莱泽", "target": "菈妮", "content": "主人，我将你的敌人碎尸万段。你无需战斗，只需指引方向。" },
+  { "type": "action", "actor": "米莉森", "content": "米莉森单膝跪地，将红痕之刃插入地面，引发腐败藤蔓蔓延整个秘穴地底。" },
+  { "type": "thought", "actor": "米莉森", "content": "我不是玛莲妮亚，我是我自己。我要以‘米莉森’的名义，结束这场腐败诅咒。" },
+  { "type": "dialogue", "actor": "米莉森", "target": "玛莲妮亚", "content": "你曾赐我力量，如今我以这力量，对抗命运本身。你会阻止我吗？" },
+  { "type": "action", "actor": "玛莲妮亚", "content": "玛莲妮亚展开腐花之翼，从高处缓缓落下，气息中弥漫着强烈的腐败与神性。" },
+  { "type": "thought", "actor": "玛莲妮亚", "content": "米莉森……你终究还是反抗了我。但也好，让我看看，你有没有资格继承‘猩红’。" },
+  { "type": "dialogue", "actor": "玛莲妮亚", "target": "米莉森", "content": "若你能战胜我，我将不再阻拦你。但若你败了，你的腐败也将归于我。" },
+  { "type": "reaction", "actor": "世界", "content": "月光洒落，腐败蔓延，旧神不再沉默，黄金律法摇摇欲坠。所有角色感到空气中灵气紊乱，力量来源开始反噬自身。" },
+  { "type": "private", "actor": "世界", "target": "菈妮", "content": "一个遥远的声音在菈妮耳边低语，“王座等待你，但你必须放弃他。”" },
+  { "type": "private", "actor": "世界", "target": "褪色者", "content": "命运之痕浮现在你掌心，只有牺牲一位同伴，才能开启“遗忘之门”。" }
+]
+</script>
+
+  <script>
+    const selectedActor = { value: '褪色者' };
+    const nameMap = ['世界', '褪色者', '梅琳娜', '菈妮', '布莱泽', '米莉森', '玛莲妮亚'];
+
+    function getAvatar(actor) {
+      const index = nameMap.indexOf(actor);
+      return index >= 0 ? `avatar/${index}.jpg` : 'avatar/0.jpg';
+    }
+
+    function isVisibleToActor(entry, actor) {
+      const isSelf = entry.actor === actor;
+      const isWorld = entry.actor === '世界';
+      const isToActor = entry.target === actor || entry.target === '所有人';
+      const isPrivate = entry.type === 'private' || entry.type === 'guidance';
+      const isAction = entry.type === 'action'
+      const isDialogue = entry.type === 'dialogue';
+      const isVisible = isWorld
+        ? !isPrivate || isToActor || actor === '世界'
+        : isAction || entry.actor === actor || (isDialogue && isToActor);
+      return isVisible;
+    }
+    function renderInteractions(actor) {
+      const raw = document.getElementById('dialogue-data').textContent;
+      const data = JSON.parse(raw);
+      const area = document.getElementById('interactionArea');
+      area.innerHTML = '';
+      data.forEach(entry => {
+        const isSelf = entry.actor === actor;
+        const isWorld = entry.actor === '世界';
+        const isToActor = entry.target === actor || entry.target === '所有人';
+        const isPrivate = entry.type === 'private' || entry.type === 'guidance';
+        const isAction = entry.type === 'action'
+        const isDialogue = entry.type === 'dialogue';
+        const isVisible = isWorld
+          ? !isPrivate || isToActor || actor === '世界'
+          : isAction || entry.actor === actor || (isDialogue && isToActor);
+
+        if (!isVisible) return;
+
+        let label = '';
+        if (isWorld) {
+          if (entry.type === 'event') label = '事件';
+          else if (entry.type === 'reaction') label = '反馈';
+          else if (entry.type === 'private') label = `低语（对${entry.target}）`;
+          else if (entry.type === 'guidance') label = '引导';
+        } else {
+          if (entry.type === 'dialogue') label = `对话（对${entry.target}）`;
+          else if (entry.type === 'thought') label = '内心';
+          else if (entry.type === 'action') label = '行动';
+        }
+
+        const avatar = getAvatar(entry.actor);
+        let html = '';
+
+        if (isDialogue) {
+          html = `
+          <div class="chat-message ${isSelf ? 'self' : 'other'}">
+            <div class="avatar"><img src="${avatar}" /></div>
+            <div>
+              <div class="from">${entry.actor} · ${label}</div>
+              <div class="bubble">${entry.content}</div>
+            </div>
+          </div>
+        `;
+        } else {
+          html = `
+          <div class="chat-message ${isSelf ? 'self' : 'other'}">
+            <div class="avatar"><img src="${avatar}" /></div>
+            <div>
+              <div class="from">${entry.actor} · ${label}</div>
+              <div class="text-line">${entry.content}</div>
+            </div>
+          </div>
+        `;
+        }
+
+        area.insertAdjacentHTML('beforeend', html);
+      });
+      area.scrollTop = area.scrollHeight;
+    }
+
+    function renderRoleDetail(name) {
+      const raw = document.getElementById('role-data').textContent;
+      const roles = JSON.parse(raw);
+      if (name === '世界') {
+        const w = roles['世界'];
+        const html = `
+        <div class="role-header">
+          <img src="${w.avatar}" alt="世界头像" class="role-avatar" />
+          <h3 class="role-name">${w.name}</h3>
+        </div>
+        <h4>基本信息</h4>
+        <p>${w.basic}</p>
+        <h4>属性信息</h4>
+        <ul>${w.attributes.map(attr => `<li>${attr}</li>`).join('')}</ul>
+        <h4>常规事件</h4>
+        <ul>${w.events.map(ev => `<li>${ev}</li>`).join('')}</ul>
+        <h4>世界状态</h4>
+        <p>${w.status}</p>
+      `;
+        document.getElementById('roleDetail').innerHTML = html;
+        return;
+      } else {
+        const r = roles[name];
+        const html = `
+        <div class="role-header">
+          <img src="${r.avatar}" alt="${r.name}头像" class="role-avatar" />
+          <h3 class="role-name">${r.name}</h3>
+        </div>
+        <h4>基本信息</h4>
+        <p>${r.basic}</p>
+        <h4>属性信息</h4>
+        <ul>${r.attributes.map(attr => `<li>${attr}</li>`).join('')}</ul>
+        <h4>持有物品</h4>
+        <ul>${r.items.map(item => `<li>${item}</li>`).join('')}</ul>
+        <h4>角色状态</h4>
+        <p>${r.status}</p>
+      `;
+        document.getElementById('roleDetail').innerHTML = html;
+      }
+    }
+
+    renderInteractions(selectedActor.value);
+    renderRoleDetail(selectedActor.value);
+
+    function selectActorByIndex(index) {
+      const items = document.querySelectorAll('.avatar-item');
+      const icons = document.querySelectorAll('.avatar-icon');
+      items.forEach(el => el.classList.remove('selected'));
+      icons.forEach(el => el.classList.remove('selected'));
+
+      const selectedItem = items[index];
+      selectedItem.classList.add('selected');
+      selectedItem.querySelector('.avatar-icon').classList.add('selected');
+
+      selectedActor.value = nameMap[index];
+      renderInteractions(selectedActor.value);
+      renderRoleDetail(selectedActor.value);
+      updateDialogueTargetOptions();
+    }
+    function selectActorByName(name) {
+      const index = nameMap.indexOf(name);
+      selectActorByIndex(index);
+    }
+    document.querySelectorAll('.avatar-item').forEach((item, index) => {
+      item.addEventListener('click', () => selectActorByIndex(index));
+    });
+
+    let selectedType = 'dialogue';
+    const dialogueTarget = document.getElementById('dialogueTarget');
+    function updateDialogueTargetOptions() {
+      selectType('dialogue');
+      const current = selectedActor.value;
+      dialogueTarget.innerHTML = '';
+      const others = nameMap.filter(name => name !== current && name !== '世界');
+      dialogueTarget.innerHTML = '<option value="所有人">所有人</option>' +
+        others.map(name => `<option value="${name}">${name}</option>`).join('');
+    }
+    function selectType(type) {
+      const isWorld = selectedActor.value === '世界';
+      const typeNames = {
+        dialogue: isWorld ? 'event' : 'dialogue',
+        thought: isWorld ? 'reaction' : 'thought',
+        action: isWorld ? 'private' : 'action',
+      }
+      selectedType = typeNames[type]
+
+      // 根据当前角色更新按钮文本与 ID
+      const typeButtons = {
+        dialogue: isWorld ? '事件' : '对话',
+        thought: isWorld ? '反馈' : '内心',
+        action: isWorld ? '低语' : '行动',
+      };
+
+      ['dialogue', 'thought', 'action'].forEach(t => {
+        const btn = document.getElementById('btn-' + t);
+        btn.classList.remove('btn-primary');
+        btn.textContent = typeButtons[t];
+      });
+
+      document.getElementById('btn-' + type).classList.add('btn-primary');
+
+      // 世界低语 或 非世界对话时显示 target
+      const showTarget =
+        (!isWorld && type === 'dialogue') || (isWorld && type === 'action');
+      document.getElementById('dialogueTarget').style.display = showTarget
+        ? 'block'
+        : 'none';
+    }
+    updateDialogueTargetOptions();
+
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const target = document.getElementById('dialogueTarget').value;
+      const container = document.getElementById('interactionArea');
+
+      const actor = selectedActor.value;
+      const actorIndex = nameMap.indexOf(actor);
+      const targetIndex = nameMap.indexOf(target);
+
+      const newEntry = {
+        type: selectedType,
+        actor: actor,
+        content: text
+      };
+      if (selectedType === 'dialogue' || selectedType === 'private')
+        newEntry.target = target;
+
+      // 插入 JSON 数据
+      const jsonScript = document.getElementById('dialogue-data');
+      const raw = jsonScript.textContent;
+      const data = JSON.parse(raw);
+      data.push(newEntry);
+      jsonScript.textContent = JSON.stringify(data, null, 2);
+      // console.log(document.getElementById('dialogue-data'));
+      renderInteractions(actor);
+      // console.log(selectedType);
+      // 不处理内心类型
+      if (selectedType === 'thought') return;
+
+      const updatedRaw = document.getElementById('dialogue-data').textContent;
+      const updatedData = JSON.parse(updatedRaw);
+
+      if (actor === '世界') {
+        if (target === '所有人') {
+          nameMap.forEach(name => {
+            if (Math.random() < 0.2 && name !== actor) {
+              updatedData.push({
+                type: 'action',
+                actor: name,
+                content: `${name}默默注视着世界的异动，似有感悟。`
+              });
+            }
+          });
+        } else {
+          updatedData.push({
+            type: 'action',
+            actor: target,
+            content: `${target}默默注视着世界的异动，似有感悟。`
+          });
+        }
+
+      } else {
+        const reply = generateAutoReply(selectedType, actor, target)
+
+        if (selectedType === 'dialogue') {
+          if (target === '所有人') {
+            nameMap.forEach(name => {
+              if (name !== actor) {
+                updatedData.push({
+                  type: 'dialogue',
+                  actor: name,
+                  target: "所有人",
+                  content: generateAutoReply(selectedType, actor, name)
+                });
+              }
+            });
+          } else if (reply) {
+            updatedData.push({
+              type: 'dialogue',
+              actor: target,
+              target: actor,
+              content: reply
+            });
+          }
+        } else if (selectedType === 'action') {
+          updatedData.push({
+            type: Math.random() < 0.7 ? 'reaction' : 'event',
+            actor: '世界',
+            content: Math.random() < 0.5 ? `${actor}的行动引发了灵气波动，世界开始发生轻微变化。` : `某种古老的机制在暗中启动……`
+          });
+        }
+      }
+
+      document.getElementById('dialogue-data').textContent = JSON.stringify(updatedData, null, 2);
+      setTimeout(() => renderInteractions(actor), 500);
+    }
+    function generateAutoReply(type, actor, target) {
+      if (!target || actor === target) return '';
+
+      const dialogueMatrix = {
+        '褪色者': {
+          '梅琳娜': '我们已经踏上这条命运之路，你会一直在我身边吗？',
+          '菈妮': '星辰是否也会因我而转动？',
+          '布莱泽': '战士之魂，不愿沉寂。你会与我同行吗？',
+          '米莉森': '腐败未能夺走你的意志，也不会夺走我的信念。',
+          '玛莲妮亚': '即使败于你剑下，我也无悔前行。'
+        },
+        '梅琳娜': {
+          '褪色者': '只要你不放弃，我的火焰便不会熄灭。',
+          '菈妮': '星辰下的你，让我看到另一种命运的可能。',
+          '布莱泽': '忠诚于群星，不如忠诚于心。',
+          '米莉森': '你所抵抗的腐败，是我愿照亮的黑夜。',
+          '玛莲妮亚': '你的骄傲，如烈焰般烧灼世间，却也让我心生敬畏。'
+        },
+        '菈妮': {
+          '褪色者': '命运之书已有裂缝，你愿用意志重写？',
+          '梅琳娜': '火与星的轨迹，也许终会交汇。',
+          '布莱泽': '你的忠诚让我安心，也让我悲悯。',
+          '米莉森': '你若执意前行，就莫要惧怕星辉下的代价。',
+          '玛莲妮亚': '你曾代表腐败，而今却如神祇。我们终究殊途？'
+        },
+        '布莱泽': {
+          '褪色者': '若你能证明自己，我会承认你是战士。',
+          '梅琳娜': '火焰之道，不适合我这野兽。',
+          '菈妮': '主人，我愿你一切安好。',
+          '米莉森': '你的抗争像利爪，已刺入腐朽的心脏。',
+          '玛莲妮亚': '若你是宿敌，那便来一战。'
+        },
+        '米莉森': {
+          '褪色者': '你也曾在腐败中挣扎，我们同病相怜。',
+          '梅琳娜': '火焰未必能烧尽腐朽，但或许能点燃希望。',
+          '菈妮': '星辉与腐朽，皆可成为自由的助力。',
+          '布莱泽': '你保护着她，而我则选择直面黑暗。',
+          '玛莲妮亚': '姐姐，你的教诲化作我挥下的每一次剑影。'
+        },
+        '玛莲妮亚': {
+          '褪色者': '你若能生还于我剑下，便配得上命运之名。',
+          '梅琳娜': '火焰不能净化一切，唯有强者才能。',
+          '菈妮': '你执掌星辰，我掌握腐败。命运的舞台不止你我。',
+          '布莱泽': '你的忠诚令人动容，但终究无法改变命运。',
+          '米莉森': '你若败于我，我会赐你解脱；你若胜于我，我将承认你。'
+        }
+      };
+
+      if (type === 'dialogue') {
+        const response = dialogueMatrix[target]?.[actor];
+        return response || `${target}望向${actor}，神情莫测，未置可否。`;
+      }
+      if (type === 'thought') return `${target}察觉到了${actor}的沉思，却未发一言。`;
+      if (type === 'action') return `${target}默默注视着${actor}的举动，未做回应。`;
+      return '';
+    }
+    document.getElementById('chatInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+    document.querySelector('.chat-input-row button').addEventListener('click', sendMessage);
+
+    let simMode = 'manual'; // 默认手动
+    function toggleSimMode() {
+      simMode = simMode === 'auto' ? 'manual' : 'auto';
+      const dia = document.getElementById('btn-dialogue');
+      const tho = document.getElementById('btn-thought');
+      const act = document.getElementById('btn-action');
+      const tar = document.getElementById('dialogueTarget');
+      const inp = document.getElementById('chatInput');
+      const sed = document.querySelector('.chat-input-row button');
+      const btnList = [dia, tho, act, tar, inp, sed];
+
+      const isDisabled = simMode === 'auto';
+      btnList.forEach(btn => {
+        btn.disabled = isDisabled;
+        btn.style.opacity = isDisabled ? '0.5' : '1';
+        btn.style.pointerEvents = isDisabled ? 'none' : 'auto';
+      });
+
+      const btn = document.getElementById('simModeBtn');
+      if (btn) btn.textContent = simMode === 'auto' ? '手动模式' : '自动模式';
+    }
+
+    let isReplaying = false;
+    let replayPaused = false;
+    let replayQueue = [];
+    let replayReplay = [];
+    let fullData = [];
+
+    async function restartSimulation(currentOnly = false) {
+      console.log("restart");
+      isReplaying = true;
+      replayPaused = false;
+      document.getElementById('toggleSimBtn').textContent = '暂停演绎';
+
+      const raw = document.getElementById('dialogue-data').textContent;
+      const fullData = JSON.parse(raw);
+      const filtered = currentOnly ? fullData.filter(e => isVisibleToActor(e, selectedActor.value)) : fullData;
+      replayQueue = [...filtered];
+      replayReplay = [];
+      document.getElementById('dialogue-data').textContent = JSON.stringify(replayReplay, null, 2);
+
+      for (let i = 0; i < replayQueue.length; i++) {
+        const next = replayQueue[i];
+        while (replayPaused) {
+          await sleep(100); // 循环等待恢复
+        }
+        if (!currentOnly && selectedActor.value !== next.actor) {
+          selectActorByName(next.actor);
+          await sleep(1500);
+        }
+        replayReplay.push(next);
+        document.getElementById('dialogue-data').textContent = JSON.stringify(replayReplay, null, 2);
+        renderInteractions(selectedActor.value);
+        await sleep(1500);
+      }
+      isReplaying = false;
+      document.getElementById('dialogue-data').textContent = JSON.stringify(fullData, null, 2);
+      document.getElementById('toggleSimBtn').textContent = '继续演绎';
+    }
+
+    function toggleSimulation() {
+      if (!isReplaying) return;
+      replayPaused = !replayPaused;
+      document.getElementById('toggleSimBtn').textContent = replayPaused ? '继续演绎' : '暂停演绎';
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function addGuidance() {
+      const content = prompt("请输入引导内容（仅世界可见，不导出）：");
+      if (!content) return;
+      const raw = document.getElementById('dialogue-data').textContent;
+      const data = JSON.parse(raw);
+      data.push({ type: 'guidance', actor: '世界', content });
+      document.getElementById('dialogue-data').textContent = JSON.stringify(data, null, 2);
+      renderInteractions(selectedActor.value);
+    }
+
+    function exportFile(type) {
+      let content = '';
+      let filename = '';
+      const data = document.getElementById('dialogue-data')?.textContent;
+      if (!data) return;
+      const parsed = JSON.parse(data);
+      if (type === 'json') {
+        content = JSON.stringify(parsed, null, 2);
+        filename = 'simulation.json';
+      } else if (type === 'script') {
+        content = parsed.map(e => `【${e.actor} · ${e.type}${e.target ? ' → ' + e.target : ''}】
+  ${e.content}
+  `).join('');
+        filename = 'script.txt';
+      } else if (type === 'novel') {
+        content = parsed.map(e => {
+          if (e.type === 'dialogue') return `${e.actor}对${e.target}说：“${e.content}”`;
+          if (e.type === 'thought') return `${e.actor}思忖着：${e.content}`;
+          if (e.type === 'action') return `${e.actor} ${e.content}`;
+          if (e.type === 'event') return `【世界事件】${e.content}`;
+          if (e.type === 'reaction') return `【世界反馈】${e.content}`;
+          if (e.type === 'private') return `【低语】${e.actor} → ${e.target}：${e.content}`;
+          return '';
+        }).join('');
+        filename = 'novel.txt';
+      }
+
+      const blob = new Blob([content], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
+    function importDialogueFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const newData = JSON.parse(e.target.result);
+          document.getElementById('dialogue-data').textContent = JSON.stringify(newData, null, 2);
+          renderInteractions(selectedActor.value);
+        } catch (err) {
+          alert('导入失败：JSON 格式错误');
+        }
+      };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+
+</html>

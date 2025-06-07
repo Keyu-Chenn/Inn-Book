@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加入房间</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://www.transparenttextures.com/patterns/old-map.png');
+            background-color: #f4e4bc;
+        }
+        .parchment {
+            background-color: #f9f3e6;
+            background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+            border: 1px solid #d4c4a8;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .vintage-text {
+            color: #4a3728;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .vintage-button {
+            background-color: #8b7355;
+            color: #f9f3e6;
+            border: 1px solid #6b4f3f;
+            transition: all 0.3s ease;
+        }
+        .vintage-button:hover {
+            background-color: #6b4f3f;
+            transform: translateY(-1px);
+        }
+        .vintage-input {
+            background-color: #fff9f0;
+            border: 1px solid #d4c4a8;
+            color: #4a3728;
+        }
+        .vintage-input:focus {
+            border-color: #8b7355;
+            box-shadow: 0 0 0 2px rgba(139, 115, 85, 0.2);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: relative;
+            background-color: #f9f3e6;
+            margin: 15% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #8b7355;
+        }
+        .close-modal:hover {
+            color: #6b4f3f;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen">
+        <!-- 顶部导航栏 -->
+        <nav class="parchment shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold vintage-text">加入房间</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="vintage-button px-4 py-2 rounded-md" onclick="window.location.href='launch.html'">
+                            <i class="fas fa-arrow-left mr-2"></i>返回
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主要内容区 -->
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="max-w-md mx-auto">
+                <div class="parchment rounded-lg p-6">
+                    <h2 class="text-xl font-bold vintage-text mb-6 text-center">输入房间信息</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium vintage-text mb-2">房间ID</label>
+                            <input type="text" id="roomIdInput" class="vintage-input w-full px-3 py-2 rounded-md" placeholder="输入房间ID">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium vintage-text mb-2">房间密码（如果有）</label>
+                            <input type="password" id="roomPasswordInput" class="vintage-input w-full px-3 py-2 rounded-md" placeholder="输入房间密码">
+                        </div>
+                        <button class="vintage-button w-full py-3 rounded-md mt-6" onclick="joinRoom()">
+                            加入房间
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 错误提示弹窗 -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content parchment">
+            <span class="close-modal" onclick="closeErrorModal()">&times;</span>
+            <h2 class="text-xl font-bold vintage-text mb-4">提示</h2>
+            <p id="errorMessage" class="text-sm text-gray-600 mb-4"></p>
+            <div class="text-center">
+                <button class="vintage-button px-6 py-2 rounded-md" onclick="closeErrorModal()">
+                    确定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 加入房间
+        function joinRoom() {
+            const roomId = document.getElementById('roomIdInput').value.trim();
+            const password = document.getElementById('roomPasswordInput').value.trim();
+
+            if (!roomId) {
+                showError('请输入房间ID');
+                return;
+            }
+
+            // 从localStorage获取房间信息
+            const currentRoom = JSON.parse(localStorage.getItem('currentRoom'));
+            
+            if (!currentRoom) {
+                showError('房间不存在');
+                return;
+            }
+
+            if (currentRoom.id !== roomId) {
+                showError('房间ID不正确');
+                return;
+            }
+
+            if (currentRoom.password && currentRoom.password !== password) {
+                showError('房间密码不正确');
+                return;
+            }
+
+            // 检查房间是否已满
+            if (currentRoom.players && currentRoom.players.length >= currentRoom.maxPlayers) {
+                showError('房间已满');
+                return;
+            }
+
+            // 获取选中的角色
+            const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+            if (!selectedCharacter) {
+                showError('请先选择角色');
+                return;
+            }
+
+            // 添加玩家到房间
+            if (!currentRoom.players) {
+                currentRoom.players = [];
+            }
+            currentRoom.players.push({
+                id: selectedCharacter.id,
+                name: selectedCharacter.name,
+                avatar: `avatar/${selectedCharacter.id}.jpg`
+            });
+
+            // 更新房间信息
+            localStorage.setItem('currentRoom', JSON.stringify(currentRoom));
+
+            // 跳转到玩家房间
+            window.location.href = 'role-bench.html';
+        }
+
+        // 显示错误提示
+        function showError(message) {
+            const modal = document.getElementById('errorModal');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            modal.style.display = 'block';
+        }
+
+        // 关闭错误提示
+        function closeErrorModal() {
+            const modal = document.getElementById('errorModal');
+            modal.style.display = 'none';
+        }
+
+        // 点击弹窗外部关闭弹窗
+        window.onclick = function(event) {
+            const modal = document.getElementById('errorModal');
+            if (event.target == modal) {
+                closeErrorModal();
+            }
+        }
+    </script>
+</body>
+</html>

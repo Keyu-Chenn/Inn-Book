@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inn Book - 游戏进行中: [游戏世界名称]</title>
+    <style>
+        :root {
+            --parchment-light: #f5f0e1; --parchment-medium: #e6dcbf; --parchment-dark: #d4c8a8;
+            --ink-light: #5a4a3f; --ink-dark: #2c1e18; --accent-gold: #c19a49; --accent-red: #8c3a2b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Serif SC', 'Microsoft YaHei', serif; }
+        body { background-color: var(--parchment-dark); color: var(--ink-dark); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
+        .container-fluid { width: 100%; padding: 0; }
+        .game-container { max-width: 1000px; margin:0 auto; padding: 0 20px;} /* Content constrained */
+        
+        header { background-color: var(--ink-dark); box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; color: var(--parchment-light); }
+        nav.game-nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; height: 60px;}
+        .game-nav .game-title-area { display: flex; align-items: center; }
+        .game-nav .game-title-area svg { height: 24px; width: 24px; margin-right: 10px; stroke: var(--parchment-light); }
+        .game-nav .game-title-area h1 { font-size: 20px; color: var(--parchment-light); font-weight: 500; }
+        
+        .game-nav .actions-area { display: flex; align-items: center; gap: 15px; }
+        .game-nav .btn-game-action {
+            background-color: var(--accent-gold); color: var(--parchment-light); border: none;
+            padding: 8px 18px; font-size: 14px; border-radius:4px; text-decoration:none; cursor:pointer; transition: background-color 0.3s; font-weight:500;
+        }
+        .game-nav .btn-game-action:hover { background-color: #a88035; }
+        .game-nav .btn-game-outline {
+            background: transparent; border: 1px solid var(--parchment-light); color: var(--parchment-light);
+        }
+        .game-nav .btn-game-outline:hover { background-color: var(--parchment-light); color: var(--ink-dark); }
+        .game-nav .user-info { display: flex; align-items: center; gap: 10px; }
+        .game-nav .avatar { width: 36px; height: 36px; border-radius: 50%; background-color: var(--parchment-medium); display: flex; justify-content: center; align-items: center; border: 1px solid var(--accent-gold); overflow: hidden; cursor: pointer; }
+        .game-nav .avatar a { display: flex; width:100%; height:100%; align-items:center; justify-content:center;}
+        .game-nav .avatar svg { stroke: var(--ink-dark); width:20px; height:20px; }
+        
+
+        .game-layout { display: flex; flex-grow: 1; background-color: var(--parchment-light); margin-top: 1px; /* Prevent overlap */ }
+        
+        .game-sidebar { /* For character info, inventory, map etc. */
+            width: 280px;
+            background-color: var(--parchment-medium);
+            padding: 20px;
+            border-right: 1px solid var(--parchment-dark);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .game-sidebar-section { margin-bottom: 25px; }
+        .game-sidebar-section h3 {
+            font-size: 18px; color: var(--ink-dark); margin-bottom: 15px; padding-bottom: 10px;
+            border-bottom: 1px solid var(--parchment-dark);
+        }
+        .character-info p, .inventory-list li, .game-log p {
+            font-size: 15px; color: var(--ink-light); margin-bottom: 8px;
+        }
+        .inventory-list { list-style: none; padding-left: 5px;}
+        .inventory-list li { padding: 5px 0; border-bottom: 1px dashed var(--parchment-dark); }
+        .inventory-list li:last-child { border-bottom: none; }
+        .map-placeholder {
+            width:100%; height:150px; background-color: var(--parchment-dark); border-radius:4px;
+            display:flex; align-items:center; justify-content:center; color:var(--ink-light); font-style:italic;
+        }
+
+
+        .main-game-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column; /* Stack narrative and input */
+            padding: 20px;
+            overflow-y: auto; /* Allow main area to scroll if content is long */
+        }
+        .narrative-window {
+            flex-grow: 1;
+            background-color: var(--parchment-light); /* Or a slightly different parchment */
+            border: 1px solid var(--parchment-dark);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            overflow-y: auto; /* Scroll for long narratives */
+            min-height: 40vh; /* Ensure a good portion of screen height */
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+        .narrative-text p {
+            margin-bottom: 1.5em; /* Paragraph spacing */
+            font-size: 17px; /* Comfortable reading size */
+            line-height: 1.8;
+            color: var(--ink-dark);
+        }
+        .narrative-text .ai-narration { /* Style for AI generated text */
+            /* font-style: italic; */
+            color: var(--ink-dark); /* Slightly different color for AI text if desired */
+        }
+         .narrative-text .player-action-echo { /* Style for player's previous action */
+            font-weight: bold;
+            color: var(--accent-gold);
+            margin-top:1.5em;
+            border-left: 3px solid var(--accent-gold);
+            padding-left: 10px;
+        }
+
+        .player-input-area {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background-color: var(--parchment-medium);
+            border-top: 1px solid var(--parchment-dark);
+            border-radius: 0 0 8px 8px; /* If narrative window has rounded top */
+        }
+        .player-input-area textarea {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border-radius: 4px;
+            border: 1px solid var(--parchment-dark);
+            background-color: var(--parchment-light);
+            color: var(--ink-dark);
+            font-size: 16px;
+            resize: none; /* Prevent manual resize, control with rows or JS */
+            min-height: 50px; /* Start with a decent height */
+            max-height: 150px; /* Prevent excessive height */
+            overflow-y: auto;
+        }
+        .player-input-area textarea:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 2px rgba(193,154,73,0.2);
+        }
+        .player-input-area .btn-send-action {
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: var(--accent-gold);
+            color: var(--parchment-light);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 500;
+            align-self: flex-end; /* Align with bottom of textarea */
+        }
+        .player-input-area .btn-send-action:hover { background-color: #a88035; }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        .quick-actions button {
+            padding: 8px 15px;
+            font-size: 13px;
+            background-color: var(--parchment-dark);
+            color: var(--ink-light);
+            border: 1px solid var(--parchment-medium);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .quick-actions button:hover {
+            background-color: var(--accent-gold);
+            color: var(--parchment-light);
+            border-color: var(--accent-gold);
+        }
+        
+        /* No footer in game view for immersion */
+        
+        @media (max-width: 1024px) {
+            .game-sidebar { width: 250px; }
+            .main-game-area { padding: 15px; }
+        }
+        @media (max-width: 768px) {
+            .game-layout { flex-direction: column-reverse; /* Input below narrative on mobile */ }
+            .game-sidebar {
+                width: 100%;
+                border-right: none;
+                border-top: 1px solid var(--parchment-dark); /* Separator when stacked */
+                max-height: 250px; /* Limit height */
+                padding: 15px;
+                flex-direction: row; /* Horizontal scroll for sections */
+                gap: 20px;
+            }
+            .game-sidebar-section {min-width: 180px; margin-bottom:0;} /* Allow horizontal scroll */
+            .main-game-area { padding: 10px; }
+            .narrative-window { padding: 15px; font-size:16px; min-height: 50vh;}
+            .narrative-text p {font-size:16px; line-height:1.7;}
+            .player-input-area { padding: 10px; }
+            .player-input-area textarea { font-size: 15px; min-height: 44px;}
+            .player-input-area .btn-send-action { padding: 10px 20px; font-size: 15px; }
+            .game-nav .game-title-area h1 { font-size: 17px; }
+            .game-nav .btn-game-action { padding: 7px 14px; font-size: 13px;}
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="game-nav game-container">
+            <div class="game-title-area">
+                <a href="dashboard-my-games.html" title="返回我的游戏列表" style="display: flex; align-items: center; text-decoration: none; color: var(--parchment-light);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    <h1>龙痕年代：游戏版</h1>
+                </a>
+            </div>
+            <div class="actions-area">
+                <button class="btn-game-action btn-game-outline">保存进度</button>
+                <button class="btn-game-action btn-game-outline">游戏设置</button>
+                <div class="user-info">
+                    <a href="dashboard-overview.html" class="avatar">
+                        <svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="game-layout game-container">
+        <aside class="game-sidebar">
+            <div class="game-sidebar-section">
+                <h3>角色：亚瑟·晨星</h3>
+                <div class="character-info">
+                    <p><strong>状态：</strong>健康</p>
+                    <p><strong>等级：</strong>3</p>
+                    <p><strong>职业：</strong>见习骑士</p>
+                    <p><strong>当前位置：</strong>黑森林边缘的破旧旅店</p>
+                    <p><strong>任务：</strong>寻找前往龙眠山脉的向导</p>
+                </div>
+            </div>
+            <div class="game-sidebar-section">
+                <h3>物品栏</h3>
+                <ul class="inventory-list">
+                    <li>生锈的铁剑</li>
+                    <li>旅行干粮 (3份)</li>
+                    <li>治疗草药 (2份)</li>
+                    <li>神秘的羊皮纸卷轴</li>
+                </ul>
+            </div>
+             <div class="game-sidebar-section">
+                <h3>简易地图</h3>
+                <div class="map-placeholder">
+                    (地图区域)
+                </div>
+            </div>
+        </aside>
+        <main class="main-game-area">
+            <div class="narrative-window" id="narrativeWindow">
+                <div class="narrative-text">
+                    <p class="player-action-echo">&gt; 你询问酒保关于龙眠山脉向导的事情。</p>
+                    <p class="ai-narration">酒保浑浊的眼睛扫了你一眼，咧嘴一笑，露出发黄的牙齿。“龙眠山脉？年轻人，那可不是什么好去处。不过嘛，如果你非要去送死，镇子东头的老猎人或许知道些什么。但他脾气古怪，可不好打交道。” 他擦了擦油腻的吧台，又补充道：“给他带瓶好酒，兴许他能多说几句。”</p>
+                    <p class="ai-narration">昏暗的烛光在吧台上摇曳，空气中弥漫着劣质麦酒和汗水的味道。几个佣兵模样的壮汉在角落里低声交谈，不时朝你投来审视的目光。旅店的门吱呀一声被推开，一个裹着厚重斗篷的神秘人走了进来，径直在吧台的另一端坐下，兜帽遮住了他的脸。</p>
+                    <!-- More narrative will be added here by JS in a real app -->
+                </div>
+            </div>
+            <div class="quick-actions">
+                <button data-action="观察四周">观察四周</button>
+                <button data-action="与神秘人交谈">与神秘人交谈</button>
+                <button data-action="购买麦酒">购买麦酒</button>
+                <button data-action="离开旅店前往镇子东头">离开旅店</button>
+            </div>
+            <div class="player-input-area">
+                <textarea id="playerInput" placeholder="你接下来打算做什么？例如：走向那个神秘人..." rows="2"></textarea>
+                <button class="btn-send-action" id="sendActionBtn">行动</button>
+            </div>
+        </main>
+    </div>
+    <!-- Footer is omitted for game immersion -->
+    <script>
+        // Basic JS to handle quick actions and echo to narrative (placeholder)
+        const narrativeWindow = document.getElementById('narrativeWindow').querySelector('.narrative-text');
+        const playerInput = document.getElementById('playerInput');
+        const sendActionBtn = document.getElementById('sendActionBtn');
+        const quickActionButtons = document.querySelectorAll('.quick-actions button');
+
+        function addPlayerActionToNarrative(actionText) {
+            const pPlayer = document.createElement('p');
+            pPlayer.classList.add('player-action-echo');
+            pPlayer.textContent = `> ${actionText}`;
+            narrativeWindow.appendChild(pPlayer);
+            narrativeWindow.scrollTop = narrativeWindow.scrollHeight; // Scroll to bottom
+        }
+
+        function addAiResponseToNarrative(responseText) {
+            const pAI = document.createElement('p');
+            pAI.classList.add('ai-narration');
+            pAI.textContent = responseText; // Placeholder AI response
+            narrativeWindow.appendChild(pAI);
+            narrativeWindow.scrollTop = narrativeWindow.scrollHeight;
+        }
+        
+        quickActionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const action = button.dataset.action;
+                playerInput.value = action; // Optionally fill the textarea
+                // In a real app, you'd send this action to the backend/AI
+                addPlayerActionToNarrative(action);
+                // Simulate AI response
+                setTimeout(() => {
+                     addAiResponseToNarrative(`AI正在处理您的行动：“${action}”...  (这是一个占位符回应)`);
+                }, 500);
+                playerInput.value = ''; // Clear input after sending
+            });
+        });
+
+        sendActionBtn.addEventListener('click', () => {
+            const action = playerInput.value.trim();
+            if (action) {
+                addPlayerActionToNarrative(action);
+                 setTimeout(() => {
+                     addAiResponseToNarrative(`AI正在处理您的行动：“${action}”... (这是一个占位符回应)`);
+                }, 500);
+                playerInput.value = '';
+            }
+        });
+        playerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Prevent new line
+                sendActionBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>

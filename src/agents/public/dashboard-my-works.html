@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inn Book - 我的作品</title>
+    <style>
+        :root {
+            --parchment-light: #f5f0e1;
+            --parchment-medium: #e6dcbf;
+            --parchment-dark: #d4c8a8;
+            --ink-light: #5a4a3f;
+            --ink-dark: #2c1e18;
+            --accent-gold: #c19a49;
+            --accent-red: #8c3a2b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Serif SC', 'Microsoft YaHei', serif;
+        }
+
+        body {
+            background-color: var(--parchment-light);
+            color: var(--ink-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: var(--parchment-dark);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo svg {
+            height: 40px;
+            width: 40px;
+            margin-right: 10px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            color: var(--ink-dark);
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--ink-light);
+            font-weight: 500;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent-gold);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--parchment-medium);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid var(--accent-gold);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .avatar a {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar svg {
+            stroke: var(--ink-dark);
+        }
+
+        .username {
+            font-weight: 500;
+            color: var(--ink-dark);
+        }
+
+        .dashboard-layout {
+            display: flex;
+            margin-top: 30px;
+            margin-bottom: 40px;
+            gap: 30px;
+            flex-grow: 1;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--parchment-medium);
+            border-radius: 8px;
+            padding: 25px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li a {
+            text-decoration: none;
+            color: var(--ink-light);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            transition: color 0.3s, background-color 0.3s;
+            padding: 15px 25px;
+            font-size: 16px;
+        }
+
+        .sidebar-menu li.active a {
+            background-color: var(--parchment-light);
+            color: var(--accent-gold);
+            border-left: 4px solid var(--accent-gold);
+            padding-left: 21px;
+        }
+
+        .sidebar-menu li.active svg {
+            stroke: var(--accent-gold);
+        }
+
+        .sidebar-menu li a:hover {
+            color: var(--accent-gold);
+            background-color: var(--parchment-light);
+        }
+
+        .sidebar-menu li a:hover svg {
+            stroke: var(--accent-gold);
+        }
+
+        .sidebar-menu svg {
+            width: 22px;
+            height: 22px;
+            margin-right: 15px;
+            stroke: var(--ink-light);
+            transition: stroke 0.3s;
+        }
+
+        .main-dashboard-content {
+            flex: 1;
+        }
+
+        .content-section {
+            margin-bottom: 30px;
+            background-color: var(--parchment-light);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--parchment-dark);
+        }
+
+        .page-main-title {
+            font-size: 30px;
+            color: var(--ink-dark);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        /* Adjusted margin */
+        .page-main-subtitle {
+            font-size: 16px;
+            color: var(--ink-light);
+            margin-bottom: 25px;
+        }
+
+        /* New class for subtitle */
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px;
+            padding-left: 40px;
+            border-radius: 4px;
+            border: 1px solid var(--parchment-dark);
+            background-color: var(--parchment-light);
+            color: var(--ink-dark);
+            font-size: 14px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 2px rgba(193, 154, 73, 0.2);
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--ink-light);
+        }
+
+        .btn-create-work {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            font-size: 15px;
+            background-color: var(--accent-gold);
+            color: var(--parchment-light);
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .btn-create-work:hover {
+            background-color: #a88035;
+        }
+
+        .btn-create-work svg {
+            margin-right: 10px;
+            height: 18px;
+            width: 18px;
+            stroke: currentColor;
+        }
+
+        .sort-filter-bar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--parchment-dark);
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 1px solid var(--parchment-dark);
+            color: var(--ink-light);
+            font-size: 14px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .filter-btn svg {
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            color: var(--parchment-light);
+            background-color: var(--accent-gold);
+            border-color: var(--accent-gold);
+        }
+
+        .creation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .creation-card {
+            background-color: var(--parchment-medium);
+            border: 1px solid var(--parchment-dark);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+        }
+
+        .creation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-img {
+            height: 160px;
+            position: relative;
+            overflow: hidden;
+            background-color: var(--parchment-dark);
+        }
+
+        .card-img svg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+
+        .card-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--ink-dark);
+            font-weight: 600;
+        }
+
+        .card-description {
+            color: var(--ink-light);
+            font-size: 14px;
+            margin-bottom: 15px;
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: calc(1.6em * 3);
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid var(--parchment-dark);
+            font-size: 14px;
+            color: var(--ink-light);
+        }
+
+        .card-date {
+            display: flex;
+            align-items: center;
+        }
+
+        .card-date svg {
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+            stroke: currentColor;
+        }
+
+        .card-status {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-draft {
+            background-color: var(--ink-light);
+        }
+
+        .status-published {
+            background-color: var(--accent-gold);
+        }
+
+        .new-creation-card {
+            background-color: transparent;
+            border: 2px dashed var(--parchment-dark);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            cursor: pointer;
+            transition: border-color 0.3s, background-color 0.3s;
+            text-decoration: none;
+            min-height: 320px;
+            color: var(--ink-light);
+        }
+
+        .new-creation-card:hover {
+            border-color: var(--accent-gold);
+            background-color: var(--parchment-dark);
+        }
+
+        .new-creation-card svg {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 15px;
+            color: var(--accent-gold);
+        }
+
+        .new-creation-card p {
+            font-size: 16px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .pagination-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+            margin: 0 5px;
+            background-color: var(--parchment-medium);
+            color: var(--ink-light);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            border: 1px solid var(--parchment-dark);
+        }
+
+        .pagination-btn:hover,
+        .pagination-btn.active {
+            background-color: var(--accent-gold);
+            color: var(--parchment-light);
+            border-color: var(--accent-gold);
+        }
+
+        footer {
+            background-color: var(--ink-dark);
+            color: var(--parchment-light);
+            padding: 40px 0;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-logo svg {
+            height: 30px;
+            width: 30px;
+            margin-right: 10px;
+        }
+
+        .footer-logo h3 {
+            font-size: 20px;
+            color: var(--parchment-light);
+        }
+
+        .footer-links {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: var(--parchment-light);
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+            color: var(--accent-gold);
+        }
+
+        .copyright {
+            opacity: 0.6;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                margin-bottom: 30px;
+                padding: 15px 0;
+                display: flex;
+                overflow-x: auto;
+                white-space: nowrap;
+                align-self: stretch;
+            }
+
+            .sidebar-menu li {
+                flex-shrink: 0;
+            }
+
+            .sidebar-menu li.active {
+                border-left: none;
+                border-bottom: 4px solid var(--accent-gold);
+                padding-left: 25px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: none;
+            }
+
+            .btn-create-work {
+                width: 100%;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .sort-filter-bar {
+                justify-content: flex-start;
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+
+            .filter-btn {
+                flex-shrink: 0;
+            }
+
+            .creation-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .new-creation-card {
+                min-height: 200px;
+            }
+
+            .card-img {
+                height: 150px;
+            }
+
+            .card-title {
+                font-size: 18px;
+            }
+
+            .card-description {
+                font-size: 14px;
+                -webkit-line-clamp: 2;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+
+            .footer-links {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .page-main-title {
+                font-size: 26px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .filter-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+
+            .sort-filter-bar {
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <a href="homepage.html" style="display: flex; align-items: center; text-decoration: none;">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="8" width="30" height="24" rx="2" fill="#c19a49" opacity="0.3" />
+                            <path d="M8 12 H32 M8 16 H28 M8 20 H30 M8 24 H25 M8 28 H22" stroke="#2c1e18"
+                                stroke-width="1.5" />
+                            <path d="M34 4 L36 6 L34 8 L32 6 Z" fill="#c19a49" />
+                            <path d="M20 4 L22 2 L24 4 L22 6 Z" fill="#c19a49" />
+                            <path d="M8 4 L10 2 L12 4 L10 6 Z" fill="#c19a49" />
+                            <path d="M28 36 L30 34 L32 36 L30 38 Z" fill="#c19a49" />
+                            <path d="M14 36 L16 34 L18 36 L16 38 Z" fill="#c19a49" />
+                        </svg>
+                        <h1>Inn Book</h1>
+                    </a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="homepage.html">首页</a></li>
+                    <li><a href="creation-mode-list.html">创作模式</a></li>
+                    <li><a href="/game/launch.html">游戏模式</a></li>
+                    <li><a href="community-page.html">社区</a></li>
+                    <li><a href="help.html">帮助</a></li>
+                </ul>
+                <div class="user-info">
+                    <a href="dashboard-profile.html" class="avatar">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke-width="1.5" fill="none">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </a>
+                    <span class="username">李白</span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard-layout">
+            <aside class="sidebar">
+                <ul class="sidebar-menu">
+                    <li><a href="dashboard-overview.html"><svg viewBox="0 0 24 24" fill="none">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>总览</a></li>
+                    <li class="active"><a href="dashboard-my-works.html"><svg viewBox="0 0 24 24" fill="none">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                            </svg>我的作品</a></li>
+                    <li><a href="dashboard-my-games.html"><svg viewBox="0 0 24 24" fill="none">
+                                <polygon
+                                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                                </polygon>
+                            </svg>我的游戏</a></li>
+                    <li><a href="dashboard-profile.html"><svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <circle cx="12" cy="10" r="3"></circle>
+                                <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.5"></path>
+                            </svg>个人资料</a></li>
+                    <li><a href="dashboard-settings.html"><svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                                </path>
+                            </svg>设置</a></li>
+                </ul>
+            </aside>
+
+            <main class="main-dashboard-content">
+                <div class="content-section">
+                    <h1 class="page-main-title">我的作品</h1>
+                    <p class="page-main-subtitle">管理您的所有小说创作项目，从灵感初现到完美收官。</p>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" placeholder="搜索我的作品...">
+                        </div>
+                        <a href="new-creation-project.html" class="btn-create-work">
+                            <svg viewBox="0 0 24 24" stroke-width="2" fill="none">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            新建作品
+                        </a>
+                    </div>
+                    <div class="sort-filter-bar">
+                        <button class="filter-btn active">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M20 12V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h12"></path>
+                                <path d="M16 6l-8.42 8.42"></path>
+                                <path d="M12 6h4v4"></path>
+                                <path d="M12 18h.01"></path>
+                            </svg>
+                            最近编辑
+                        </button>
+                        <button class="filter-btn">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6h18M7 12h10M10 18h4"></path>
+                            </svg>
+                            创建时间
+                        </button>
+                        <button class="filter-btn">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M12 20V10"></path>
+                                <path d="M18 20V4"></path>
+                                <path d="M6 20v-4"></path>
+                            </svg>
+                            状态
+                        </button>
+                    </div>
+
+                    <div class="creation-grid">
+                        <a href="new-creation-project.html" class="new-creation-card">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="16"></line>
+                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                            </svg>
+                            <p>创建新作品</p>
+                        </a>
+
+                        <a href="edit-creation-project.html" class="creation-card">
+                            <div class="card-img">
+                                <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- <rect width="280" height="160" fill="var(--parchment-dark)" opacity="0.3"/><path d="M70 80 L140 40 L210 80 L140 120 Z" fill="var(--accent-gold)" opacity="0.4"/><path d="M70 80 L140 40 M140 40 L210 80 M210 80 L140 120 M140 120 L70 80" stroke="var(--ink-light)" stroke-width="2" opacity="0.6"/><circle cx="140" cy="80" r="20" fill="var(--parchment-medium)"/><path d="M130 80 L150 80 M140 70 L140 90" stroke="var(--ink-light)" stroke-width="2"/> -->
+                                </svg>
+                            </div>
+                            <div class="card-content">
+                                <h3 class="card-title">《龙痕年代：序章》</h3>
+                                <p class="card-description">古老的预言再次苏醒，巨龙的阴影笼罩大地。年轻的勇者，亚瑟，踏上了寻找传说中龙骑士的旅程...</p>
+                                <div class="card-footer">
+                                    <div class="card-date"><svg viewBox="0 0 24 24" fill="none">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                                        </svg>2025-05-15</div>
+                                    <div class="card-status"><span class="status-indicator status-published"></span>已发布
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <a href="edit-creation-project.html" class="creation-card">
+                            <div class="card-img">
+                                <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- <rect width="280" height="160" fill="var(--parchment-dark)" opacity="0.3"/><path d="M30 130 C70 100 100 140 140 110 C180 80 210 120 250 90" stroke="var(--ink-light)" stroke-width="2" fill="none" opacity="0.6"/><path d="M30 120 C70 90 100 130 140 100 C180 70 210 110 250 80" stroke="var(--accent-gold)" stroke-width="2" fill="none" opacity="0.6"/><circle cx="140" cy="105" r="10" fill="var(--parchment-medium)"/><path d="M137 105 L143 105 M140 102 L140 108" stroke="var(--ink-light)" stroke-width="1.5"/> -->
+                                </svg>
+                            </div>
+                            <div class="card-content">
+                                <h3 class="card-title">《星尘远征：迷失舰队》</h3>
+                                <p class="card-description">在银河系的边缘，一支人类的殖民舰队失去了联系。指挥官莉娜带领小队深入未知的星域搜寻...</p>
+                                <div class="card-footer">
+                                    <div class="card-date"><svg viewBox="0 0 24 24" fill="none">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                                        </svg>2025-05-12</div>
+                                    <div class="card-status"><span class="status-indicator status-draft"></span>草稿中
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="pagination">
+                        <a href="#" class="pagination-btn"><svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                                <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" />
+                            </svg></a>
+                        <a href="#" class="pagination-btn active">1</a>
+                        <a href="#" class="pagination-btn"><svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" />
+                            </svg></a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <a href="homepage.html" style="display: flex; align-items: center; text-decoration: none;">
+                        <svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="8" width="20" height="14" rx="1" fill="#c19a49" opacity="0.3" />
+                            <path d="M8 12 H22 M8 15 H20 M8 18 H18" stroke="#e6dcbf" stroke-width="1" />
+                            <path d="M24 5 L25 4 L26 5 L25 6 Z" fill="#c19a49" />
+                            <path d="M15 5 L16 4 L17 5 L16 6 Z" fill="#c19a49" />
+                            <path d="M6 5 L7 4 L8 5 L7 6 Z" fill="#c19a49" />
+                            <path d="M20 25 L21 24 L22 25 L21 26 Z" fill="#c19a49" />
+                            <path d="M10 25 L11 24 L12 25 L11 26 Z" fill="#c19a49" />
+                        </svg>
+                        <h3>Inn Book</h3>
+                    </a>
+                </div>
+                <ul class="footer-links">
+                    <li><a href="about.html">关于我们</a></li>
+                    <li><a href="terms.html">使用条款</a></li>
+                    <li><a href="privacy.html">隐私政策</a></li>
+                    <li><a href="help.html">帮助中心</a></li>
+                    <li><a href="contact.html">联系我们</a></li>
+                </ul>
+                <div class="copyright">
+                    &copy; 2025 Inn Book. 保留所有权利。
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

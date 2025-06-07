@@ -21,6 +21,12 @@ const routes = [
         component: () => import('../views/CharacterSetting/index.vue'),
         meta: { title: '角色设定' }
     }
+    ,
+    {
+        path: '/test',
+        component: () => import('../components/Header.vue'),
+        meta: { title: '测试' }
+    }
 ]
 
 const router = createRouter({

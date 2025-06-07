@@ -20,7 +20,7 @@
         <ul class="nav-links">
           <li><a href="homepage.html" class="active">首页</a></li>
           <li><a href="creation-mode-list.html">创作模式</a></li>
-          <li><a href="game_mode_list.html">游戏模式</a></li>
+          <li><a href="/game/launch.html">游戏模式</a></li>
           <li><a href="community-page.html">社区</a></li>
           <li><a href="help.html">帮助</a></li>
         </ul>
@@ -43,7 +43,7 @@
           <p class="hero-subtitle">用智能创作，让文字跃然纸上；通过游戏体验，让故事活在当下。AI Book让你的想象变为现实。</p>
           <div class="cta-buttons">
             <a href="creation-mode-list.html" class="btn btn-primary btn-large">开始创作</a>
-            <a href="game_mode_list.html" class="btn btn-outline btn-large">体验游戏</a>
+            <a href="/game/launch.html" class="btn btn-outline btn-large">体验游戏</a>
           </div>
         </div>
         <!-- <div class="hero-image">
@@ -98,7 +98,7 @@
             <div class="mode-content">
               <h3>游戏模式</h3>
               <p>化身为故事中的角色或全知上帝，在你创造的世界中探索冒险。每一个选择都会改变剧情走向，AI实时推演因果，创造独一无二的沉浸式体验。</p>
-              <a href="game_mode_list.html" class="btn btn-primary">开启冒险</a>
+              <a href="/game/launch.html" class="btn btn-primary">开启冒险</a>
             </div>
           </div>
         </div>

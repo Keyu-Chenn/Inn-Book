@@ -203,7 +203,7 @@ const goToPreviousStep = () => {
 
 // 下一步（完成）
 const goToNextStep = () => {
-  window.location.reload()
+  window.location.href = '/worlds'
 }
 </script>
 

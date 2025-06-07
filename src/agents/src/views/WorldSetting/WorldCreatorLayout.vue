@@ -6,11 +6,15 @@
       </div>
       <div class="nav-buttons">
         <el-button class="fancy-button" type="primary" @click="saveWorld">
-          <el-icon><Download /></el-icon>
+          <el-icon>
+            <Download />
+          </el-icon>
           保存世界
         </el-button>
         <el-button class="fancy-button" type="primary" @click="exportWorld">
-          <el-icon><Share /></el-icon>
+          <el-icon>
+            <Share />
+          </el-icon>
           导出世界
         </el-button>
       </div>
@@ -19,26 +23,15 @@
     <el-main class="main-content">
       <div class="steps-container">
         <div class="steps-track" :style="{ '--progress-width': `${(currentStepValue / (steps.length - 1)) * 100}%` }">
-          <div 
-            v-for="(step, index) in steps" 
-            :key="index"
-            class="step-item"
-            :style="{ left: `${(index / (steps.length - 1)) * 100}%` }"
-          >
-            <div 
-              class="step-marker"
-              :class="{ 
-                active: currentStepValue === index,
-                completed: currentStepValue > index
-              }"
-              @click="setCurrentStep(index)"
-            >
+          <div v-for="(step, index) in steps" :key="index" class="step-item"
+            :style="{ left: `${(index / (steps.length - 1)) * 100}%` }">
+            <div class="step-marker" :class="{
+              active: currentStepValue === index,
+              completed: currentStepValue > index
+            }" @click="setCurrentStep(index)">
               <span v-if="currentStepValue > index" class="step-check">✓</span>
             </div>
-            <div 
-              class="step-label"
-              :class="{ active: currentStepValue === index }"
-            >
+            <div class="step-label" :class="{ active: currentStepValue === index }">
               {{ step }}
             </div>
           </div>
@@ -49,17 +42,11 @@
       </div>
     </el-main>
 
-    <el-footer class="footer">
-      <div class="footer-content">
-        <p>© 2024 WORLD CRAFTER - Where Imagination Meets AI</p>
-      </div>
-    </el-footer>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { Download, Share } from '@element-plus/icons-vue'
 
 const props = defineProps({
   currentStep: {
@@ -122,7 +109,7 @@ const exportWorld = () => {
       transform: rotate(-2deg);
       transition: all 0.3s ease;
       letter-spacing: 2px;
-      
+
       &:hover {
         transform: rotate(0deg) scale(1.05);
         text-shadow: 5px 5px 0 rgba(139, 69, 19, 0.3);
@@ -143,7 +130,8 @@ const exportWorld = () => {
   flex-direction: column;
   gap: 2rem;
   align-items: center;
-  background-color: #f9f3e5; /* 淡米色背景 */
+  background-color: #f9f3e5;
+  /* 淡米色背景 */
 
   .steps-container,
   .content-wrapper {
@@ -160,11 +148,11 @@ const exportWorld = () => {
     padding: 2rem;
     /* 保持透明背景 */
   }
-  
+
   .steps-container {
     .step-marker {
       position: relative;
-      
+
       .step-check {
         position: absolute;
         top: 50%;
@@ -196,32 +184,32 @@ const exportWorld = () => {
     padding: 1rem;
     flex-direction: column;
     gap: 1rem;
-    
+
     .logo h1 {
       font-size: 3.5rem;
       text-align: center;
     }
   }
-  
+
   .main-content {
     padding: 1rem;
-    
+
     .content-wrapper {
       padding: 1rem 0;
     }
-    
+
     .steps-container {
       margin: 1rem auto 3rem auto;
-      
+
       .step-label {
         font-size: 0.8rem;
       }
     }
   }
-  
+
   .nav-buttons {
     width: 100%;
     justify-content: center;
   }
 }
-</style> 
+</style>

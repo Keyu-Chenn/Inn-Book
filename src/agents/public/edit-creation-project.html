@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inn Book - 编辑创作: [作品标题]</title>
+    <style>
+        :root {
+            --parchment-light: #f5f0e1; --parchment-medium: #e6dcbf; --parchment-dark: #d4c8a8;
+            --ink-light: #5a4a3f; --ink-dark: #2c1e18; --accent-gold: #c19a49; --accent-red: #8c3a2b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Serif SC', 'Microsoft YaHei', serif; }
+        body { background-color: var(--parchment-dark); /* Darker background for editor focus */ color: var(--ink-dark); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
+        .container-fluid { width: 100%; padding: 0; } /* Full width for editor layout */
+        .editor-container { max-width: 1400px; margin:0 auto; padding: 0 20px;} /* Content constrained within full-width */
+        
+        header { background-color: var(--ink-dark); /* Darker header for editor */ box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; color: var(--parchment-light); }
+        nav.editor-nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; height: 60px;}
+        .editor-nav .logo-area { display: flex; align-items: center; }
+        .editor-nav .logo-area svg { height: 30px; width: 30px; margin-right: 8px; fill: var(--parchment-light); }
+        .editor-nav .logo-area h1 { font-size: 20px; color: var(--parchment-light); font-weight: bold; }
+        .editor-nav .document-title-area { flex-grow: 1; text-align: center; }
+        .editor-nav .document-title-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--parchment-medium);
+            color: var(--parchment-light);
+            font-size: 18px;
+            font-weight: 500;
+            padding: 5px 10px;
+            text-align: center;
+            max-width: 400px;
+        }
+        .editor-nav .document-title-input:focus { outline: none; border-bottom-color: var(--accent-gold); }
+        
+        .editor-nav .actions-area { display: flex; align-items: center; gap: 15px; }
+        .editor-nav .btn-editor {
+            background-color: var(--accent-gold); color: var(--parchment-light); border: none;
+            padding: 8px 18px; font-size: 14px; border-radius:4px; text-decoration:none; cursor:pointer; transition: background-color 0.3s; font-weight:500;
+        }
+        .editor-nav .btn-editor:hover { background-color: #a88035; }
+        .editor-nav .btn-editor-outline {
+            background: transparent; border: 1px solid var(--parchment-light); color: var(--parchment-light);
+        }
+        .editor-nav .btn-editor-outline:hover { background-color: var(--parchment-light); color: var(--ink-dark); }
+        .editor-nav .user-info { display: flex; align-items: center; gap: 10px; }
+        .editor-nav .avatar { width: 36px; height: 36px; border-radius: 50%; background-color: var(--parchment-medium); display: flex; justify-content: center; align-items: center; border: 1px solid var(--accent-gold); overflow: hidden; cursor: pointer; }
+        .editor-nav .avatar a { display: flex; width:100%; height:100%; align-items:center; justify-content:center;}
+        .editor-nav .avatar svg { stroke: var(--ink-dark); width:20px; height:20px; }
+        
+
+        .editor-layout { display: flex; flex-grow: 1; background-color: var(--parchment-light); margin-top: 1px; /* Prevent overlap with sticky header */ }
+        
+        .sidebar-panel { /* For chapters, outline, AI tools */
+            width: 280px;
+            background-color: var(--parchment-medium);
+            padding: 20px;
+            border-right: 1px solid var(--parchment-dark);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-panel h3 {
+            font-size: 18px; color: var(--ink-dark); margin-bottom: 15px; padding-bottom: 10px;
+            border-bottom: 1px solid var(--parchment-dark);
+        }
+        .chapter-list { list-style: none; margin-bottom: 25px; }
+        .chapter-list li a {
+            display: block; padding: 10px 15px; text-decoration: none; color: var(--ink-light);
+            border-radius: 4px; margin-bottom: 5px; transition: background-color 0.3s, color 0.3s;
+        }
+        .chapter-list li a:hover { background-color: var(--parchment-dark); color: var(--ink-dark); }
+        .chapter-list li a.active { background-color: var(--accent-gold); color: var(--parchment-light); font-weight: 500; }
+        .btn-add-chapter {
+            display: block; width: 100%; text-align: center; padding: 10px;
+            background-color: var(--ink-light); color: var(--parchment-light);
+            border:none; border-radius:4px; cursor:pointer; transition: background-color 0.3s; font-size:14px; margin-bottom: 20px;
+            text-decoration: none;
+        }
+        .btn-add-chapter:hover { background-color: var(--ink-dark); }
+
+        .ai-tools-panel { margin-top: auto; /* Push AI tools to bottom of sidebar if content is short */ }
+        .ai-tools-panel .btn-ai-tool {
+            display: block; width: 100%; text-align: left; padding: 12px 15px;
+            background-color: var(--parchment-light); color: var(--ink-dark);
+            border:1px solid var(--parchment-dark); border-radius:4px; cursor:pointer; 
+            transition: background-color 0.3s, border-color 0.3s; font-size:14px; margin-bottom: 8px;
+            display: flex; align-items: center;
+        }
+        .ai-tools-panel .btn-ai-tool svg { width: 18px; height:18px; margin-right:10px; stroke:var(--ink-light);}
+        .ai-tools-panel .btn-ai-tool:hover { background-color: var(--parchment-dark); border-color:var(--accent-gold);}
+
+
+        .main-editor-area {
+            flex-grow: 1;
+            padding: 30px 40px; /* Padding around the "paper" */
+            display: flex;
+            justify-content: center; /* Center the "paper" */
+            overflow-y: auto;
+        }
+        .editor-paper {
+            width: 100%;
+            max-width: 800px; /* Typical document width */
+            background-color: #fff; /* White paper */
+            padding: 50px 60px; /* Generous padding like a real page */
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            border: 1px solid #ccc;
+            min-height: calc(100vh - 60px - 60px); /* Full height minus header and some padding */
+        }
+        .editor-textarea {
+            width: 100%;
+            height: 100%; /* Fill the paper */
+            min-height: 70vh; /* Ensure it's tall enough */
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: 'Songti SC', 'SimSun', serif; /* Classic Chinese reading font */
+            font-size: 18px; /* Comfortable reading size */
+            line-height: 2; /* Double-spaced for readability */
+            color: #333;
+        }
+        
+        .editor-toolbar { /* Placeholder for actual toolbar */
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--parchment-dark);
+            display: flex;
+            gap: 10px;
+        }
+        .toolbar-button {
+            background: var(--parchment-medium); border: 1px solid var(--parchment-dark);
+            padding: 8px; border-radius: 4px; cursor: pointer;
+        }
+        .toolbar-button svg { width: 18px; height: 18px; vertical-align: middle; fill: var(--ink-light); }
+
+
+        /* No footer in editor view for distraction-free writing */
+        
+        @media (max-width: 1024px) {
+            .sidebar-panel { width: 240px; }
+            .main-editor-area { padding: 20px; }
+            .editor-paper { padding: 30px 40px; }
+        }
+        @media (max-width: 768px) {
+            .editor-layout { flex-direction: column; }
+            .sidebar-panel {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--parchment-dark);
+                max-height: 300px; /* Limit height when stacked */
+                padding: 15px;
+            }
+            .sidebar-panel h3 {font-size:16px; margin-bottom:10px;}
+            .chapter-list li a {padding: 8px 10px; font-size:14px;}
+            .btn-add-chapter {padding:8px; font-size:13px;}
+            .ai-tools-panel .btn-ai-tool {padding:10px 12px; font-size:13px;}
+
+            .main-editor-area { padding: 15px; }
+            .editor-paper { padding: 20px; min-height: calc(100vh - 60px - 300px - 30px); /* Adjust for stacked sidebar */ }
+            .editor-textarea { font-size: 16px; line-height: 1.8;}
+            .editor-nav .document-title-input { max-width: 200px; font-size:16px; }
+            .editor-nav .btn-editor { padding: 6px 12px; font-size: 13px;}
+            .editor-nav .logo-area h1 { display:none; /* Hide title on small screens for space */}
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="editor-nav editor-container">
+            <div class="logo-area">
+                <a href="dashboard-my-works.html" title="返回作品列表" style="display: flex; align-items: center; text-decoration: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    <h1>Inn Book 编辑器</h1>
+                </a>
+            </div>
+            <div class="document-title-area">
+                <input type="text" class="document-title-input" value="《龙痕年代：序章》" placeholder="输入作品标题...">
+            </div>
+            <div class="actions-area">
+                <button class="btn-editor btn-editor-outline">发布设置</button>
+                <button class="btn-editor">保存</button>
+                <div class="user-info">
+                    <a href="dashboard-overview.html" class="avatar">
+                        <svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="editor-layout editor-container">
+        <aside class="sidebar-panel">
+            <h3>章节列表</h3>
+            <ul class="chapter-list">
+                <li><a href="#" class="active">第一章：巨龙的苏醒</a></li>
+                <li><a href="#">第二章：启程的号角</a></li>
+                <li><a href="#">第三章：迷雾森林的试炼</a></li>
+                <li><a href="#">第四章：失落的龙骑士遗迹</a></li>
+                <!-- Add more chapters -->
+            </ul>
+            <a href="add-new-chapter.html" class="btn-add-chapter">
+                 <svg viewBox="0 0 16 16" fill="currentColor" style="width:14px; height:14px; margin-right:5px; vertical-align:middle;"> <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/> </svg>
+                添加新章节
+            </a>
+            
+            <div style="margin-top:20px; border-top:1px solid var(--parchment-dark); padding-top:20px;">
+                 <h3>世界观与设定</h3>
+                 <ul class="chapter-list"> <!-- Reusing chapter-list style for simplicity -->
+                    <li><a href="character-management.html">主要角色</a></li>
+                    <li><a href="#">势力与地理</a></li>
+                    <li><a href="history-lore.html">历史与传说</a></li>
+                 </ul>
+            </div>
+
+            <div class="ai-tools-panel">
+                <h3>AI 辅助工具</h3>
+                <button class="btn-ai-tool">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    情节发展建议
+                </button>
+                <button class="btn-ai-tool">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"></circle><path d="M5.5 21v-2a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v2"></path></svg>
+                    角色塑造助手
+                </button>
+                 <button class="btn-ai-tool">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    世界观构建器
+                </button>
+                <button class="btn-ai-tool">
+                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    AI续写/润色
+                </button>
+            </div>
+        </aside>
+        <main class="main-editor-area" style="min-width: 1000px;">
+            <div class="editor-paper">
+                <textarea class="editor-textarea" placeholder="开始书写您的传奇故事...">第一章 巨龙的苏醒
+
+夜色如墨，寒风呼啸着穿过破碎的窗棂，在古老的塔楼中断断续续地呜咽。塔顶的房间里，唯一的火光来自壁炉中苟延残喘的余烬，映照着一张年轻而焦虑的脸庞。
+
+亚瑟紧了紧身上单薄的斗篷，目光不时地投向窗外那片被黑雾笼罩的山脉——龙眠山脉，一个连传说都讳莫如深的地方。村里的老人们说，那里沉睡着足以毁灭世界的巨龙。而今夜，山脉深处传来的低沉咆哮，似乎印证了这个古老的传说。
+
+“导师，您确定……我们必须这么做吗？”亚瑟的声音带着一丝不易察觉的颤抖，望向房间另一侧那个背对着他，凝视着星空的老者。
+
+老者缓缓转过身，他满脸皱纹，眼神却如同最明亮的星辰般深邃。他是村里唯一的智者，也是亚瑟的导师，伊莱亚斯。
+
+“孩子，”伊莱亚斯的声音平静而苍老，“预言之轮已经开始转动。巨龙的苏醒并非偶然，它预示着一个时代的终结，以及另一个时代的开启。而你，亚瑟，便是那开启新时代的关键。”
+
+亚瑟的心猛地一沉。他只是一个普通的山村少年，除了比同龄人多读了几本古籍，懂得一些草药知识外，实在看不出自己有何“关键”之处。
+
+“可是我……”
+
+“我知道你的疑虑，”伊莱亚斯打断了他，从怀中取出一枚古朴的徽章，递给亚瑟。“这是龙骑士的信物。传说中，只有真正的龙骑士才能唤醒并驾驭巨龙。而你，是数百年来唯一能让这枚徽章产生共鸣的人。”
+
+亚瑟接过徽章，入手冰凉，上面雕刻着一条栩栩如生的盘龙，龙眼处镶嵌着一颗黯淡无光的宝石。他从未感受到这枚徽章有任何异样。
+
+就在此时，山脉深处的咆哮声再次传来，比之前任何一次都要响亮，仿佛整个塔楼都在随之震动。壁炉中的火焰猛地跳动了一下，几乎熄灭。
+
+伊莱亚斯的神情变得无比凝重：“时间不多了，亚瑟。你必须在黎明之前到达龙眠山脉的顶峰，找到那头苏醒的巨龙。否则，一旦它完全挣脱束缚，整个王国都将化为焦土。”
+</textarea>
+            </div>
+        </main>
+    </div>
+    <!-- Footer is intentionally omitted for a distraction-free editor experience -->
+</body>
+</html>
