@@ -203,6 +203,11 @@ const goToPreviousStep = () => {
 // 下一步
 const goToNextStep = () => {
   emit('update:currentStep', 3)
+  // 滚动到页面顶端
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth' // 平滑滚动
+  })
 }
 
 onMounted(() => {

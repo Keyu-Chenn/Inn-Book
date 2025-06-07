@@ -118,6 +118,11 @@ const goToNextStep = () => {
     // 可以在这里存储数据或者发送到服务器
     // 在实际项目中可能会使用Vuex或Pinia存储状态
     emit('update:currentStep', 2)
+    // 滚动到页面顶端
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // 平滑滚动
+    })
   }
 }
 
